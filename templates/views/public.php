@@ -56,6 +56,7 @@
 		<ul auto-populate="true"></ul>
 	</div>
 	<script src="<?= BASE_URL  ?>js/app.js"></script>
+	<script src="<?= BASE_URL ?>js/trongate-mx.js"></script>
 </body>
 
 </html>
