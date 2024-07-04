@@ -1,3 +1,18 @@
+function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
+    
+    const containingForm = element.closest('form');
+	const submitButton = element.querySelector('button[type="submit"]');
+
+	if (submitButton) {
+		// No need to click since has (probably?) already been clicked!
+	    submitButton.disabled = true; // Disable submit button
+	    invokeHttpRequest(element, triggerEvent, httpMethodAttribute);
+	} else {
+		console.log('no submit button found');
+	}
+
+}
+
 function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
 
 	// Establish the target URL.
@@ -34,6 +49,15 @@ function handleHttpResponse(http, element) {
         	if(targetEl) {
         		populateTargetEl(targetEl, http, element);
         	}
+        }
+
+        const containingForm = element.closest('form');
+
+        if (containingForm) {
+			const submitButton = element.querySelector('button[type="submit"]');
+			if (submitButton) {
+				submitButton.removeAttribute('disabled');
+			}
         }
 
         // Perform actions based on the response
@@ -105,7 +129,11 @@ function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
 
         const containingForm = element.closest('form');
         if (containingForm) {
-        	alert('force pressing of button and simulate sending of form') // Later
+
+        	if (triggerEvent === 'submit') {
+        		mxSubmitForm(element, triggerEvent, httpMethodAttribute);
+        	}
+
         } else {
         	// This does not belong to a form!
         	invokeHttpRequest(element, triggerEvent, httpMethodAttribute);

@@ -4,7 +4,15 @@ class Tasks extends Trongate {
     private $endpoint_url = BASE_URL.'tasks/list';
 
     public function test1() {
+        // Populate a 'result' div upon the pressing of a button.
         $data['view_file'] = 'test1';
+        $data['endpoint_url'] = $this->endpoint_url;
+        $this->template('public', $data);
+    }
+
+    public function test2() {
+        // Populate a 'result' div upon the submission of a form.
+        $data['view_file'] = 'test2';
         $data['endpoint_url'] = $this->endpoint_url;
         $this->template('public', $data);
     }
