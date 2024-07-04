@@ -40,6 +40,53 @@ class Tasks extends Trongate {
         $this->template('public', $data);
     }
 
+    public function test4b() {
+        // Same as test4() but with mx-select-oob working.
+    }
+
+    public function test4c() {
+        // Same as test4b() but with mx-swap-oob working.
+    }
+
+    public function test5() {
+        // Real CRUD example that adds items and uses mx-select to display the list!
+    }
+
+    public function test6() {
+        // Same as test 5 but with delete buttons.
+    }
+
+    public function test7() {
+        // BUILD THE NET NINJA APP - as demonstrated here: https://youtu.be/Yr-ubS0H7z4?si=KDVs4rvU9_JHKZdf&t=280
+    }
+
+    public function test8() {
+        // Build and test the 'mx-load' feature.
+    }
+
+    public function test9() {
+        // Post values from NON FORM elements.
+    }
+
+    public function test10() {
+        // HANDLE FORM VALIDATION ERRORS
+    }
+
+    // THEN:  Get the button replacing thing working.   Get .innerHTML etc working (hx-swap)
+    /*
+value,description
+innerHTML,the default, puts the content inside the target element
+outerHTML,replaces the entire target element with the returned content
+afterbegin,prepends the content before the first child inside the target
+beforebegin,prepends the content before the target in the target's parent element
+beforeend,appends the content after the last child inside the target
+afterend,appends the content after the target in the target's parent element
+delete,deletes the target element regardless of the response
+none,does not append content from response (Out of Band Swaps and Response Headers will still be processed)
+    */
+    // ...advanced triggers (e.g., hx-trigger="keyup changed delay:500ms")
+
+
     function manage() {
     	$data['view_file'] = 'manage';
     	$this->template('public', $data);
