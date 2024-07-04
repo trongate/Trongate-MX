@@ -75,7 +75,24 @@ function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
 }
 
 function populateTargetEl(targetEl, http, element) {
-	targetEl.innerHTML = http.responseText;
+    const selectStr = getAttributeValue(element, 'mx-select');
+    if (selectStr) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = http.responseText;
+
+        const selectedEl = tempDiv.querySelector(selectStr);
+
+        targetEl.innerHTML = '';
+        if (selectedEl) {
+            targetEl.appendChild(selectedEl.cloneNode(true));
+        }
+
+        // Optional: explicitly clear the reference
+        tempDiv.innerHTML = '';
+        tempDiv = null;
+    } else {
+        targetEl.innerHTML = http.responseText;
+    }
 }
 
 function handleHttpResponse(http, element) {
