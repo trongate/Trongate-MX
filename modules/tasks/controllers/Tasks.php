@@ -1,6 +1,14 @@
 <?php
 class Tasks extends Trongate {
 
+    private $endpoint_url = BASE_URL.'tasks/list';
+
+    public function test1() {
+        $data['view_file'] = 'test1';
+        $data['endpoint_url'] = $this->endpoint_url;
+        $this->template('public', $data);
+    }
+
     function manage() {
     	$data['view_file'] = 'manage';
     	$this->template('public', $data);

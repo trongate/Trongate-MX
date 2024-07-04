@@ -1,21 +1,148 @@
-// Function to activate loader on a specified element
-function activateLoader(element) {
-    if (element) {
-        element.classList.remove('mx-indicator-hidden');
-        element.classList.add('mx-indicator');
+function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
+
+	// Establish the target URL.
+	const targetUrl = element.getAttribute(httpMethodAttribute);
+
+	// Establish the request type.
+	const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
+
+	// Attempt to displaying 'loading' element (indicator).
+	attemptActivateLoader(element);
+
+	const http = new XMLHttpRequest();
+	http.open(requestType, targetUrl);
+	http.setRequestHeader('Accept', 'text/html');
+	http.send();
+	http.onload = function() {
+		attemptHideLoader(element);
+		handleHttpResponse(http, element);
+	}
+}
+
+function populateTargetEl(targetEl, http, element) {
+	targetEl.outerHTML = http.responseText;
+}
+
+function handleHttpResponse(http, element) {
+
+    // Check if the request was successful
+    if (http.status >= 200 && http.status < 300) {
+        const mxTargetStr = getAttributeValue(element, 'mx-target');
+
+        if (mxTargetStr) {
+        	const targetEl = document.querySelector(mxTargetStr);
+        	if(targetEl) {
+        		populateTargetEl(targetEl, http, element);
+        	}
+        }
+
+        // Perform actions based on the response
+        // For example, update the DOM, show a success message, etc.
+    } else {
+        console.error('Request failed with status:', http.status);
+        // Handle the error
+        // For example, show an error message, log the error, etc.
+    }
+
+    // Remove the loader if present
+    const indicatorSelector = getAttributeValue(element, 'mx-indicator');
+    if (indicatorSelector) {
+        const indicatorElement = document.querySelector(indicatorSelector);
+        if (indicatorElement) {
+            hideLoader(indicatorElement);
+        }
     }
 }
 
-// Function to hide loader on a specified element
-function hideLoader(element) {
-    if (element) {
-        element.classList.remove('mx-indicator');
-        element.classList.add('mx-indicator-hidden');
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Function to handle standard DOM events based on MX attributes
+function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
+
+    element.addEventListener(triggerEvent, event => {
+        event.preventDefault(); // Prevent default behavior
+
+        // The following three attribute types require an attempt to collect form data.
+        const requiresDataAttributes = ['mx-post', 'mx-put', 'mx-patch'];
+
+        if (requiresDataAttributes.includes(httpMethodAttribute)) {
+        	alert("later!"); // Fetch the data.
+        	return;
+        }
+
+        // Is the element either a 'form' tag or an element within a form?
+
+        const containingForm = element.closest('form');
+        if (containingForm) {
+        	alert('force pressing of button and simulate sending of form') // Later
+        } else {
+        	// This does not belong to a form!
+        	invokeHttpRequest(element, triggerEvent, httpMethodAttribute);
+        }
+
+    });
+}
+
+function handleMxTrigger(element) {
+
+    const methodAttributes = ['mx-get', 'mx-post', 'mx-put', 'mx-delete', 'mx-patch'];
+
+    // Array of standard DOM events
+    const standardEvents = ['click', 'dblclick', 'change', 'submit', 'keyup', 'keydown', 'focus', 'blur'];
+
+    methodAttributes.forEach(attribute => {
+        if (element.hasAttribute(attribute)) {
+            
+            // Establish what the trigger event is that will invoke the HTTP request for this element.
+            const triggerEvent = establishTriggerEvent(element);
+
+            if (standardEvents.includes(triggerEvent)) {
+                handleStandardEvents(element, triggerEvent, attribute);
+            } else if (triggerEvent === 'load') {
+                handleLoadEvents(element, attribute);
+            }
+        }
+    });
+
 }
 
 // Function to establish the trigger event based on element type and mx-trigger attribute
-function establishTriggerEvent(tagName, triggerEventStr) {
+function establishTriggerEvent(element) {
+
+	const tagName = element.tagName;
+	const triggerEventStr = element.getAttribute('mx-trigger');
+
     if (triggerEventStr) {
         return triggerEventStr; // Return mx-trigger attribute value if provided
     }
@@ -36,239 +163,50 @@ function establishTriggerEvent(tagName, triggerEventStr) {
     }
 }
 
-// Function to perform HTTP request
-function performHttpRequest(httpRequestArgs) {
-    // Destructure properties from httpRequestArgs
-    const { url, method, formData, indicatorSelector, targetElement } = httpRequestArgs;
-
-    const options = {
-        method: method.toUpperCase(),
-        body: formData
-    };
-
-    // Optional: Activate loader if indicatorSelector is provided
-    if (indicatorSelector) {
-        activateLoader(document.querySelector(indicatorSelector));
+function getAttributeValue(element, attributeName) {
+    if (element && element.hasAttribute(attributeName)) {
+        return element.getAttribute(attributeName);
     }
-
-    return fetch(url, options)
-        .then(response => {
-            // Optional: Hide loader if indicatorSelector is provided
-            if (indicatorSelector) {
-                hideLoader(document.querySelector(indicatorSelector));
-            }
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            return response.text();
-        })
-        .then(data => {
-            // Update targetElement with response data
-            if (targetElement) {
-                targetElement.innerHTML = data;
-            } else {
-                console.error('Target element not found:', targetElement);
-            }
-        })
-        .catch(error => {
-            console.error('Error performing HTTP request:', error);
-            // Handle errors as needed
-            throw error; // Re-throw error to propagate to caller
-        });
+    return false;
 }
 
-// Function to handle standard DOM events based on HTMX attributes
-function handleStandardEvents(element, attribute, url, triggerEvent) {
-    element.addEventListener(triggerEvent, event => {
-        event.preventDefault(); // Prevent default behavior
-        
-        const formData = new FormData(element);
-        const indicatorSelector = element.getAttribute('mx-indicator');
-        const targetElement = document.querySelector(element.getAttribute('mx-target'));
-        
-        const httpRequestArgs = {
-            url,
-            method: attribute.replace('mx-', ''),
-            formData,
-            indicatorSelector,
-            targetElement
-        };
-
-        performHttpRequest(httpRequestArgs)
-            .catch(error => {
-                console.error('Error handling standard event:', error);
-                // Handle errors as needed
-            });
-    });
+function attemptActivateLoader(element) {
+	const indicatorSelector = getAttributeValue(element, 'mx-indicator');
+	if (indicatorSelector) {
+	    const loaderEl = document.querySelector(indicatorSelector);
+	    activateLoader(loaderEl);
+	}
 }
 
-function listenForSubmit(formEl) {
-    formEl.addEventListener('submit', async event => {
-        event.preventDefault(); // Prevent default form submission
-        console.log('submit was invoked but I have prevented the default submit behaviour');
-
-        const formData = new FormData(formEl);
-        const url = formEl.getAttribute('mx-post');
-        const targetSelector = formEl.getAttribute('mx-target');
-        const indicatorSelector = formEl.getAttribute('mx-indicator');
-        const indicatorEl = indicatorSelector ? document.querySelector(indicatorSelector) : null;
-        const targetElement = targetSelector ? document.querySelector(targetSelector) : null;
-        const submitButton = formEl.querySelector('button[type="submit"]');
-
-        if (submitButton) {
-            submitButton.disabled = true; // Disable submit button
-        }
-
-        if (indicatorEl && indicatorEl.classList.contains('mx-indicator-hidden')) {
-            activateLoader(indicatorEl);
-        }
-
-        console.log('API URL:', url);
-        console.log('Form Data:', formData);
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (indicatorEl) {
-                hideLoader(indicatorEl);
-            }
-
-            console.log('HTTP Status:', response.status);
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.text();
-
-            if (targetElement) {
-                targetElement.innerHTML = data; // Update target element with response data
-            } else {
-                console.error('Target element not found:', targetSelector);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            // Handle errors as needed
-            if (targetElement) {
-                targetElement.innerHTML = '<p class="error">An error occurred. Please try again.</p>';
-            }
-        } finally {
-            if (submitButton) {
-                submitButton.disabled = false; // Enable submit button after request completes
-            }
-        }
-
-
-    });
-}
-
-// Function to handle 'load' events based on HTMX attributes
-function handleLoadEvents(element, attribute, url) {
-
-    const tagName = element.tagName.toLowerCase();
-    if (tagName === 'form') {
-        listenForSubmit(element);
-        console.log('cool');
-        const submitButton = element.querySelector('button[type="submit"]');
-
-        if (submitButton) {
-            submitButton.click();
-        } else {
-            console.log("Submit button not found");
-        }
+// Function to activate loader on a specified element
+function activateLoader(element) {
+    if (element && element.classList.contains('mx-indicator-hidden')) {
+        element.classList.remove('mx-indicator-hidden');
+        element.classList.add('mx-indicator');
     }
-    
-
-return;
-
-    window.addEventListener('load', () => {
-        const tagName = element.tagName.toLowerCase();
-        const targetElement = document.querySelector(element.getAttribute('mx-target'));
-        
-        if (tagName === 'form') {
-            // For form elements, force form submission
-            element.submit();
-        } else {
-            // For non-form elements, perform HTTP request
-            const httpRequestArgs = {
-                url,
-                method: attribute.replace('mx-', ''),
-                formData: null, // No form data for 'load' event
-                indicatorSelector: null,
-                targetElement
-            };
-
-            performHttpRequest(httpRequestArgs)
-                .catch(error => {
-                    console.error('Error handling load event:', error);
-                    // Handle errors as needed
-                });
-        }
-    });
 }
 
-// Function to handle 'load' events based on HTMX attributes
-function handleLoadEventsDUFF(element, attribute, url) {
-
-    window.addEventListener('load', () => {
-        const tagName = element.tagName.toLowerCase();
-        const targetElement = document.querySelector(element.getAttribute('mx-target'));
-        
-        if (tagName === 'form') {
-            // For form elements, force form submission
-            element.submit();
-        } else {
-            // For non-form elements, perform HTTP request
-            const httpRequestArgs = {
-                url,
-                method: attribute.replace('mx-', ''),
-                formData: null, // No form data for 'load' event
-                indicatorSelector: null,
-                targetElement
-            };
-
-            performHttpRequest(httpRequestArgs)
-                .catch(error => {
-                    console.error('Error handling load event:', error);
-                    // Handle errors as needed
-                });
-        }
-    });
+function attemptHideLoader(element) {
+	const indicatorSelector = getAttributeValue(element, 'mx-indicator');
+	if (indicatorSelector) {
+	    const loaderEl = document.querySelector(indicatorSelector);
+	    hideLoader(loaderEl);
+	}
 }
 
-// Function to handle MX triggers based on HTMX attributes
-function handleMxTrigger(element) {
-    const methodAttributes = ['mx-get', 'mx-post', 'mx-put', 'mx-delete', 'mx-patch'];
-
-    // Array of standard DOM events
-    const standardEvents = ['click', 'dblclick', 'change', 'submit', 'keyup', 'keydown', 'focus', 'blur'];
-
-    methodAttributes.forEach(attribute => {
-        if (element.hasAttribute(attribute)) {
-            const url = element.getAttribute(attribute);
-            const triggerEventStr = element.getAttribute('mx-trigger');
-            const triggerEvent = establishTriggerEvent(element.tagName, triggerEventStr);
-
-            if (standardEvents.includes(triggerEvent)) {
-                handleStandardEvents(element, attribute, url, triggerEvent);
-            } else if (triggerEvent === 'load') {
-                handleLoadEvents(element, attribute, url);
-            }
-        }
-    });
+// Function to hide loader on a specified element
+function hideLoader(element) {
+    if (element && element.classList.contains('mx-indicator')) {
+        element.classList.remove('mx-indicator');
+        element.classList.add('mx-indicator-hidden');
+    }
 }
 
 // Wait for the document to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Find all elements with the mx-indicator class
     document.querySelectorAll('.mx-indicator').forEach(element => {
-        element.classList.remove('mx-indicator');
-        element.classList.add('mx-indicator-hidden');
+    	hideLoader(element);
         element.style.display = ''; // Remove inline style "display: none;"
     });
 
@@ -276,4 +214,5 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[mx-get], [mx-post], [mx-put], [mx-delete], [mx-patch]').forEach(element => {
         handleMxTrigger(element);
     });
+
 });
