@@ -1,3 +1,34 @@
+function invokeFormPost(element, triggerEvent, httpMethodAttribute) {
+	console.log('look at me..  I am posting a form');
+
+	// Establish the target URL.
+	const targetUrl = element.getAttribute(httpMethodAttribute);
+
+	// Establish the request type.
+	const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
+
+	// Attempt to displaying 'loading' element (indicator).
+	attemptActivateLoader(element);
+
+	const containingForm = element.closest('form');
+    const formData = new FormData(containingForm);
+
+	const http = new XMLHttpRequest();
+	http.open('POST', targetUrl);
+	// No need to set Content-Type header when sending FormData
+	http.send(formData);
+	http.onload = function() {
+	    console.log(http.status);
+	    console.log(http.responseText);
+		attemptHideLoader(element);
+		containingForm.reset();
+		handleHttpResponse(http, element);
+
+	};
+
+
+}
+
 function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
     
     const containingForm = element.closest('form');
@@ -6,7 +37,16 @@ function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
 	if (submitButton) {
 		// No need to click since has (probably?) already been clicked!
 	    submitButton.disabled = true; // Disable submit button
-	    invokeHttpRequest(element, triggerEvent, httpMethodAttribute);
+
+        // The following three attribute types require an attempt to collect form data.
+        const requiresDataAttributes = ['mx-post', 'mx-put', 'mx-patch'];
+
+        if (requiresDataAttributes.includes(httpMethodAttribute)) {
+        	invokeFormPost(element, triggerEvent, httpMethodAttribute);
+        } else {
+        	invokeHttpRequest(element, triggerEvent, httpMethodAttribute);
+        }
+    
 	} else {
 		console.log('no submit button found');
 	}
@@ -35,7 +75,7 @@ function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
 }
 
 function populateTargetEl(targetEl, http, element) {
-	targetEl.outerHTML = http.responseText;
+	targetEl.innerHTML = http.responseText;
 }
 
 function handleHttpResponse(http, element) {
@@ -117,16 +157,7 @@ function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
     element.addEventListener(triggerEvent, event => {
         event.preventDefault(); // Prevent default behavior
 
-        // The following three attribute types require an attempt to collect form data.
-        const requiresDataAttributes = ['mx-post', 'mx-put', 'mx-patch'];
-
-        if (requiresDataAttributes.includes(httpMethodAttribute)) {
-        	alert("later!"); // Fetch the data.
-        	return;
-        }
-
         // Is the element either a 'form' tag or an element within a form?
-
         const containingForm = element.closest('form');
         if (containingForm) {
 
