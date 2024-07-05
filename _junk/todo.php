@@ -1,8 +1,14 @@
-*  Get the /get div working.
+* GET VALIDATION ERRORS WORKING.
 
-*  Get the hx-select feature working.
+* CONSIDER ADDING AUTO SUCCESS MESSAGE if no success message found on API response.
 
-*  Get hx-select-oob working.
+
+
+
+
+*.  get the delete feature working
+
+* get mx-push working - so that we can push to the address bar.
 
 * Build the hx-target feature as displayed at https://youtu.be/0UvA7zvwsmg?si=KuEe0Nt7XL33gHKV&t=966
 

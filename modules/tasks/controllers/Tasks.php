@@ -61,6 +61,10 @@ class Tasks extends Trongate {
 
     public function test5() {
         // Real CRUD example that adds items and uses mx-select to display the list!
+        $data['rows'] = $this->model->get('id');
+        $data['view_file'] = 'test5';
+        $data['endpoint_url'] = '';
+        $this->template('public', $data);
     }
 
     public function test6() {
@@ -109,17 +113,61 @@ none,does not append content from response (Out of Band Swaps and Response Heade
     }
 
     function list() {
+        $data['rows'] = $this->model->get('id');
+        $data['view_file'] = 'task_list';
     	$data['view_module'] = 'tasks';
-    	$this->view('list', $data);
+    	$this->template('public', $data);
+    }
+
+    function delete_task() {
+        $update_id = segment(3, 'int');
+
+
+        $this->model->delete($update_id);
+
+            $rows = $this->model->get('id');
+            echo '<div id="updated-list">';
+            echo '<ul>';
+            foreach($rows as $row) {
+                echo '<li>'.$row->task_title.' <i class=\'fa fa-trash\'></i></li>';
+            }
+            echo '</ul></div>';
+
+
     }
 
 	function submit_task() {
-	    // Simulate a delay
-	    //sleep(1);
-        http_response_code(200);
-	    $task_title = post('task_title');
-	    echo $task_title;
-	    die();
+	    // Simulate a delay       
+        sleep(2);
+        $this->validation->set_rules('task_title', 'task_title', 'required|min_length[3]');
+        $result = $this->validation->run();
+
+        if ($result === true) {
+            
+            http_response_code(200);
+            $data['task_title'] = post('task_title', true);
+            $this->model->insert($data, 'tasks');
+
+            echo '<div id="response" style="color: green">Here is your response</div>';
+
+            $this->list();
+
+        } else {
+            validation_errors(422);
+        }
+
 	}
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
