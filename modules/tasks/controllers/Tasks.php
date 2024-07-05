@@ -35,6 +35,7 @@ class Tasks extends Trongate {
 
     public function test4() {
         // Back to basic button example.  However, this time we will use mx-select to ONLY display one element from response.
+        // Now also have mx-swap working here!
         $data['view_file'] = 'test4';
         $data['endpoint_url'] = $this->endpoint_url;
         $this->template('public', $data);
