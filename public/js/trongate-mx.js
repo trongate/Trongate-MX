@@ -294,18 +294,19 @@ function establishTriggerEvent(element) {
 }
 
 function establishSwapStr(element) {
-    // Try to get the mx-swap attribute
-    const swapStr = element.getAttribute('mx-swap');
-
-    // If mx-swap is found, return its value; otherwise, return 'innerHTML'
-    return swapStr || 'innerHTML';
+    const swapStr = getAttributeValue(element, 'mx-swap');
+    return swapStr || 'innerHTML'; // Default to 'innerHTML' if not specified
 }
 
 function getAttributeValue(element, attributeName) {
-    if (element && element.hasAttribute(attributeName)) {
-        return element.getAttribute(attributeName);
+    let current = element;
+    while (current) {
+        if (current.hasAttribute(attributeName)) {
+            return current.getAttribute(attributeName);
+        }
+        current = current.parentElement;
     }
-    return false;
+    return null;
 }
 
 function attemptActivateLoader(element) {

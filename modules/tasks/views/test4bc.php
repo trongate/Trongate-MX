@@ -4,7 +4,7 @@
     <p>This div has mx-select-oob and mx-swap attributes that should be inherited by its children.</p>
 
     <button mx-get="<?= $endpoint_url ?>" 
-            mx-select="#main-content" 
+            mx-select="#new-main-content" 
             mx-target="#result">
         Update Content
     </button>

@@ -54,6 +54,11 @@
     <p>This content has been updated via AJAX.</p>
 </div>
 
+<div id="extra-content">
+    <h1>Extra Content Ahoy</h1>
+    <p>This is extra content</p>
+</div>
+
 <div id="sidebar-content">
     <h2>Updated Sidebar</h2>
     <p>This is the new sidebar content.</p>
