@@ -6,7 +6,7 @@ class Tasks extends Trongate {
     private $endpoint_url = BASE_URL.'tasks/demo';
 
     public function demo() {
-        sleep(1);
+        //sleep(1);
         $data['view_file'] = 'demo_content'; // Just some page content
         $this->template('public', $data);
     }
@@ -104,7 +104,7 @@ none,does not append content from response (Out of Band Swaps and Response Heade
 
 	function submit_task() {
 	    // Simulate a delay
-	    sleep(1);
+	    //sleep(1);
         http_response_code(200);
 	    $task_title = post('task_title');
 	    echo $task_title;

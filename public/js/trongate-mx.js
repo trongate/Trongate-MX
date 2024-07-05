@@ -26,7 +26,6 @@ function invokeFormPost(element, triggerEvent, httpMethodAttribute) {
 
 	};
 
-
 }
 
 function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
@@ -76,22 +75,76 @@ function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
 
 function populateTargetEl(targetEl, http, element) {
     const selectStr = getAttributeValue(element, 'mx-select');
+    const mxSwapStr = establishSwapStr(element);
+
     if (selectStr) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = http.responseText;
 
         const selectedEl = tempDiv.querySelector(selectStr);
 
-        targetEl.innerHTML = '';
         if (selectedEl) {
-            targetEl.appendChild(selectedEl.cloneNode(true));
+            // Perform the swap based on mxSwapStr
+            switch (mxSwapStr) {
+                case 'outerHTML':
+                    targetEl.outerHTML = selectedEl.outerHTML;
+                    break;
+                case 'textContent':
+                    targetEl.textContent = selectedEl.textContent;
+                    break;
+                case 'beforebegin':
+                    targetEl.insertAdjacentHTML('beforebegin', selectedEl.outerHTML);
+                    break;
+                case 'afterbegin':
+                    targetEl.insertAdjacentHTML('afterbegin', selectedEl.outerHTML);
+                    break;
+                case 'beforeend':
+                    targetEl.insertAdjacentHTML('beforeend', selectedEl.outerHTML);
+                    break;
+                case 'afterend':
+                    targetEl.insertAdjacentHTML('afterend', selectedEl.outerHTML);
+                    break;
+                case 'delete':
+                    targetEl.remove();
+                    break;
+                case 'none':
+                    // Do nothing
+                    break;
+                default: // 'innerHTML' is the default
+                    targetEl.innerHTML = selectedEl.outerHTML;
+            }
         }
 
-        // Optional: explicitly clear the reference
+        // Clean up
         tempDiv.innerHTML = '';
-        tempDiv = null;
+        tempDiv.remove();
     } else {
-        targetEl.innerHTML = http.responseText;
+        // If no mx-select, just swap the entire response based on mxSwapStr
+        switch (mxSwapStr) {
+            case 'outerHTML':
+                targetEl.outerHTML = http.responseText;
+                break;
+            case 'beforebegin':
+                targetEl.insertAdjacentHTML('beforebegin', http.responseText);
+                break;
+            case 'afterbegin':
+                targetEl.insertAdjacentHTML('afterbegin', http.responseText);
+                break;
+            case 'beforeend':
+                targetEl.insertAdjacentHTML('beforeend', http.responseText);
+                break;
+            case 'afterend':
+                targetEl.insertAdjacentHTML('afterend', http.responseText);
+                break;
+            case 'delete':
+                targetEl.remove();
+                break;
+            case 'none':
+                // Do nothing
+                break;
+            default: // 'innerHTML' is the default
+                targetEl.innerHTML = http.responseText;
+        }
     }
 }
 
@@ -237,6 +290,14 @@ function establishTriggerEvent(element) {
         default:
             return 'click'; // Default to click for other elements
     }
+}
+
+function establishSwapStr(element) {
+    // Try to get the mx-swap attribute
+    const swapStr = element.getAttribute('mx-swap');
+
+    // If mx-swap is found, return its value; otherwise, return 'innerHTML'
+    return swapStr || 'innerHTML';
 }
 
 function getAttributeValue(element, attributeName) {
