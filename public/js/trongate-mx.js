@@ -76,75 +76,76 @@ function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
 function populateTargetEl(targetEl, http, element) {
     const selectStr = getAttributeValue(element, 'mx-select');
     const mxSwapStr = establishSwapStr(element);
+    const selectOobStr = getAttributeValue(element, 'mx-select-oob');
+
+    // Create a temporary div to hold the response
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = http.responseText;
+
+    // Handle out-of-band swaps first
+    if (selectOobStr) {
+        const oobSelectors = selectOobStr.split(',');
+        oobSelectors.forEach(selector => {
+            const [oobSelectStr, oobTargetStr] = selector.trim().split(':').map(s => s.trim());
+            if (oobTargetStr && oobSelectStr) {
+                const oobTargets = document.querySelectorAll(oobTargetStr);
+                const oobSelected = tempDiv.querySelector(oobSelectStr);
+                if (oobTargets.length && oobSelected) {
+                    oobTargets.forEach(oobTarget => {
+                        const oobSwapStr = oobTarget.getAttribute('mx-swap') || mxSwapStr || 'innerHTML';
+                        swapContent(oobTarget, oobSelected.cloneNode(true), oobSwapStr);
+                    });
+                }
+            }
+        });
+    }
+
+    // Handle the main target swap
+    let content;
 
     if (selectStr) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = http.responseText;
-
-        const selectedEl = tempDiv.querySelector(selectStr);
-
-        if (selectedEl) {
-            // Perform the swap based on mxSwapStr
-            switch (mxSwapStr) {
-                case 'outerHTML':
-                    targetEl.outerHTML = selectedEl.outerHTML;
-                    break;
-                case 'textContent':
-                    targetEl.textContent = selectedEl.textContent;
-                    break;
-                case 'beforebegin':
-                    targetEl.insertAdjacentHTML('beforebegin', selectedEl.outerHTML);
-                    break;
-                case 'afterbegin':
-                    targetEl.insertAdjacentHTML('afterbegin', selectedEl.outerHTML);
-                    break;
-                case 'beforeend':
-                    targetEl.insertAdjacentHTML('beforeend', selectedEl.outerHTML);
-                    break;
-                case 'afterend':
-                    targetEl.insertAdjacentHTML('afterend', selectedEl.outerHTML);
-                    break;
-                case 'delete':
-                    targetEl.remove();
-                    break;
-                case 'none':
-                    // Do nothing
-                    break;
-                default: // 'innerHTML' is the default
-                    targetEl.innerHTML = selectedEl.outerHTML;
-            }
-        }
-
-        // Clean up
-        tempDiv.innerHTML = '';
-        tempDiv.remove();
+        content = tempDiv.querySelector(selectStr);
     } else {
-        // If no mx-select, just swap the entire response based on mxSwapStr
-        switch (mxSwapStr) {
-            case 'outerHTML':
-                targetEl.outerHTML = http.responseText;
-                break;
-            case 'beforebegin':
-                targetEl.insertAdjacentHTML('beforebegin', http.responseText);
-                break;
-            case 'afterbegin':
-                targetEl.insertAdjacentHTML('afterbegin', http.responseText);
-                break;
-            case 'beforeend':
-                targetEl.insertAdjacentHTML('beforeend', http.responseText);
-                break;
-            case 'afterend':
-                targetEl.insertAdjacentHTML('afterend', http.responseText);
-                break;
-            case 'delete':
-                targetEl.remove();
-                break;
-            case 'none':
-                // Do nothing
-                break;
-            default: // 'innerHTML' is the default
-                targetEl.innerHTML = http.responseText;
-        }
+        content = tempDiv;
+    }
+
+    if (content) {
+        swapContent(targetEl, content, mxSwapStr);
+    }
+
+    // Clean up
+    tempDiv.innerHTML = '';
+    tempDiv.remove();
+}
+
+function swapContent(target, source, swapMethod) {
+    switch (swapMethod) {
+        case 'outerHTML':
+            target.outerHTML = source.outerHTML;
+            break;
+        case 'textContent':
+            target.textContent = source.textContent;
+            break;
+        case 'beforebegin':
+            target.insertAdjacentHTML('beforebegin', source.outerHTML);
+            break;
+        case 'afterbegin':
+            target.insertAdjacentHTML('afterbegin', source.outerHTML);
+            break;
+        case 'beforeend':
+            target.insertAdjacentHTML('beforeend', source.outerHTML);
+            break;
+        case 'afterend':
+            target.insertAdjacentHTML('afterend', source.outerHTML);
+            break;
+        case 'delete':
+            target.remove();
+            break;
+        case 'none':
+            // Do nothing
+            break;
+        default: // 'innerHTML' is the default
+            target.innerHTML = source.outerHTML || source.innerHTML;
     }
 }
 

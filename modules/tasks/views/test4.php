@@ -12,8 +12,6 @@
 	<p>Third</p>
 </div>
 
-
-
 <style>
 #result {
 	background-color: cyan;

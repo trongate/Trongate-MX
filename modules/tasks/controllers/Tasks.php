@@ -43,10 +43,16 @@ class Tasks extends Trongate {
 
     public function test4b() {
         // Same as test4() but with mx-select-oob working.
+        $data['view_file'] = 'test4b';
+        $data['endpoint_url'] = $this->endpoint_url;
+        $this->template('public', $data);
     }
 
     public function test4c() {
         // Same as test4b() but with mx-swap-oob working.
+        $data['view_file'] = 'test4bc';
+        $data['endpoint_url'] = $this->endpoint_url;
+        $this->template('public', $data);
     }
 
     public function test5() {
