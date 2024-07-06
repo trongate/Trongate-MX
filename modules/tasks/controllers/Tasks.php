@@ -138,7 +138,7 @@ none,does not append content from response (Out of Band Swaps and Response Heade
 
 	function submit_task() {
 	    // Simulate a delay       
-        sleep(2);
+        // sleep(2);
         $this->validation->set_rules('task_title', 'task_title', 'required|min_length[3]');
         $result = $this->validation->run();
 

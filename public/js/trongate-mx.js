@@ -226,40 +226,6 @@ function handleValidationErrors(containingForm, validationErrors) {
     });
 }
 
-function attemptDisplayValidationErrorsXXX(http, element, containingForm) {
-    if (http.status === 422) { // Assuming 422 is your validation error status code
-        try {
-            const validationErrors = JSON.parse(http.responseText);
-            
-            // First, remove any existing validation error classes
-            containingForm.querySelectorAll('.form-field-validation-error')
-                .forEach(field => field.classList.remove('form-field-validation-error'));
-
-            // Loop through the validation errors
-            validationErrors.forEach(error => {
-                // Find the form field with the name matching the error field
-                const field = containingForm.querySelector(`[name="${error.field}"]`);
-                if (field) {
-                    // Add the validation error class to the field
-                    field.classList.add('form-field-validation-error');
-
-                    // Optionally, display the error message
-                    const errorContainer = field.nextElementSibling;
-                    if (errorContainer && errorContainer.classList.contains('error-message')) {
-                        errorContainer.textContent = error.messages.join(' ');
-                    }
-                }
-            });
-
-            // Optionally, you can use the 'element' parameter here if needed
-            // For example, to scroll to the first error or focus on a specific element
-
-        } catch (e) {
-            console.error('Error parsing validation errors:', e);
-        }
-    }
-}
-
 function clearExistingValidationErrors(containingForm) {
     // Remove elements with class 'validation-error-report'
     containingForm.querySelectorAll('.validation-error-report')

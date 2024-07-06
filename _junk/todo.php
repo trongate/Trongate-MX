@@ -1,8 +1,12 @@
 * GET VALIDATION ERRORS WORKING.
 
-* CONSIDER ADDING AUTO SUCCESS MESSAGE if no success message found on API response.
+			The inline validation errors work.
 
+			The next step would be to get mx-select-oob working to display a message, or whatever!
 
+			After that, our goal to ONLY have the inline validation errors working if our form has a class of 'highlight-errors'
+
+			IF the form does NOT have a class of highlight-errors, a normal validation report should be presented.
 
 
 
