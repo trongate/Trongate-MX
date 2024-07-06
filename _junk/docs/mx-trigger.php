@@ -1,9 +1,9 @@
-<h1>Triggers</h1>
-<p>The <code>mx-trigger</code> attribute in Trongate MX allows you to specify which event should trigger an HTTP request for an element. This attribute provides fine-grained control over when and how your elements interact with the server. </p>
-<h2>Understanding mx-trigger</h2>
-<p>When you add an <code>mx-trigger</code> attribute to an element, you're telling Trongate MX to listen for a specific event on that element. When that event occurs, Trongate MX will initiate the HTTP request specified by attributes like <code>mx-get</code>, <code>mx-post</code>, etc. </p>
-<h2>Valid Triggers</h2>
-<p>Trongate MX supports the following standard DOM events as valid triggers:</p>
+<h1>Triggers in Trongate MX</h1>
+<p>Trongate MX uses event triggers to determine when to initiate HTTP requests. While there isn't a specific <code>mx-trigger</code> attribute, the triggering behavior is built into the framework's event handling system. </p>
+<h2>Understanding Triggers in Trongate MX</h2>
+<p>Trongate MX listens for specific events on elements with attributes like <code>mx-get</code>, <code>mx-post</code>, etc. When these events occur, Trongate MX initiates the corresponding HTTP request. </p>
+<h2>Supported Events</h2>
+<p>Trongate MX supports the following standard DOM events:</p>
 <ul>
   <li>
     <code>click</code>: Triggered when the element is clicked
@@ -29,12 +29,9 @@
   <li>
     <code>blur</code>: Triggered when an element loses focus
   </li>
-  <li>
-    <code>load</code>: Triggered when the page finishes loading
-  </li>
 </ul>
-<h2>Default Triggers</h2>
-<p>If no <code>mx-trigger</code> is specified, Trongate MX will use default triggers based on the element type: </p>
+<h2>Default Behaviors</h2>
+<p>If no specific event is specified, Trongate MX uses default behaviors based on the element type:</p>
 <ul>
   <li>For <code>&lt;form&gt;</code> elements: <code>submit</code>
   </li>
@@ -45,30 +42,23 @@
   <li>For all other elements: <code>click</code>
   </li>
 </ul>
-<h2>Examples</h2>
-<h3>Example 1: Populating a div on page load</h3>
-<p>To have a <code>#result</code> div automatically populate upon the initial page load, you can use the <code>load</code> trigger. Here's an example: </p>
+<h2>Special Attributes</h2>
+<h3>mx-load</h3>
+<p>The <code>mx-load</code> attribute is used for automatic loading of content when the page loads. It doesn't require a separate trigger specification. </p>
+<h3>Example: Auto-loading content</h3>
 <pre>
-	<code>&lt;div mx-get="&lt;?= BASE_URL ?&gt;api/get_initial_data" mx-trigger="load" mx-target="#result"&gt;&lt;/div&gt; &lt;div id="result"&gt;&lt;/div&gt;</code>
+  <code>&lt;div id="result" mx-load="http://localhost/api/get_data" mx-select="table" mx-indicator=".spinner"&gt;&lt;/div&gt;</code>
 </pre>
-<p>In this example, as soon as the page loads, Trongate MX will make a GET request to the specified URL and populate the <code>#result</code> div with the response. </p>
-<h3>Example 2: Fetching data on button click</h3>
-<p>Here's an example of using a custom trigger on a button:</p>
+<p>In this example, Trongate MX will automatically make a GET request to the specified URL when the page loads and populate the <code>#result</code> div with the response. </p>
+<h2>Form Submission</h2>
+<p>For form submissions, Trongate MX automatically handles the submit event:</p>
 <pre>
-	<code>&lt;button mx-get="&lt;?= BASE_URL ?&gt;api/get_data" mx-trigger="click" mx-target="#result"&gt; Fetch Data &lt;/button&gt; &lt;div id="result"&gt;&lt;/div&gt;</code>
+  <code>&lt;form mx-post="http://localhost/api/submit_data" mx-target="#message-area" mx-indicator=".spinner"&gt; &lt;!-- form fields here --&gt; &lt;button type="submit"&gt;Submit&lt;/button&gt; &lt;/form&gt;</code>
 </pre>
-<p>In this case, the GET request will only be triggered when the button is clicked, and the response will be inserted into the <code>#result</code> div. </p>
-<h2>Advanced Usage</h2>
-<p>You can combine <code>mx-trigger</code> with other Trongate MX attributes for more complex behaviors. For example: </p>
-<pre>
-	<code>&lt;input type="text" mx-get="&lt;?= BASE_URL ?&gt;api/search" mx-trigger="keyup changed delay:500ms" mx-target="#search-results"&gt; &lt;div id="search-results"&gt;&lt;/div&gt;</code>
-</pre>
-<p>This input will trigger a search request 500 milliseconds after the user stops typing, but only if the value has changed.</p>
 <h2>Notes</h2>
 <ul>
-  <li>The <code>mx-trigger</code> attribute is optional. If not specified, Trongate MX will use the default trigger for the element type. </li>
-  <li>You can specify multiple triggers by separating them with spaces.</li>
-  <li>The <code>load</code> trigger is special and will cause the request to be sent immediately when the page loads. </li>
-  <li>When using <code>mx-trigger</code> with form elements, be mindful of the default form submission behavior and use <code>event.preventDefault()</code> if necessary. </li>
+  <li>Trongate MX automatically prevents default form submission behavior.</li>
+  <li>The framework handles showing and hiding of loader elements specified by <code>mx-indicator</code>. </li>
+  <li>For non-form elements, the default trigger is typically a click event.</li>
 </ul>
-<p>By mastering the <code>mx-trigger</code> attribute, you can create highly interactive and responsive web applications with minimal JavaScript code. </p>
+<p>By understanding how Trongate MX handles events and triggers, you can create interactive and responsive web applications with minimal custom JavaScript.</p>

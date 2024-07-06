@@ -1,43 +1,40 @@
-function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
-    console.log('look at me.. I am posting a form');
+function invokeFormPost(element, triggerEvent, httpMethodAttribute) {
+	console.log('look at me..  I am posting a form');
 
-    // Establish the target URL.
-    const targetUrl = containingForm.getAttribute(httpMethodAttribute);
+	// Establish the target URL.
+	const targetUrl = element.getAttribute(httpMethodAttribute);
 
-    // Establish the request type.
-    const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
+	// Establish the request type.
+	const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
 
-    // Attempt to display 'loading' element (indicator).
-    attemptActivateLoader(containingForm);
+	// Attempt to displaying 'loading' element (indicator).
+	attemptActivateLoader(element);
 
+	const containingForm = element.closest('form');
     const formData = new FormData(containingForm);
 
-    const http = new XMLHttpRequest();
-    http.open('POST', targetUrl);
+	const http = new XMLHttpRequest();
+	http.open('POST', targetUrl);
 
-    // No need to set Content-Type header when sending FormData
-    http.send(formData);
+	// No need to set Content-Type header when sending FormData
+	http.send(formData);
+	http.onload = function() {
+		attemptHideLoader(element);
 
-    http.onload = function() {
-        attemptHideLoader(containingForm);
-        
         // Only reset the form if the request was successful
         if (http.status >= 200 && http.status < 300) {
             containingForm.reset();
         }
 
-        handleHttpResponse(http, containingForm);
-    };
+		handleHttpResponse(http, element);
+	};
+
 }
 
 function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
     const containingForm = element.closest('form');
-    if (!containingForm) {
-        console.error('No containing form found');
-        return;
-    }
+    const submitButton = element.querySelector('button[type="submit"]');
 
-    const submitButton = containingForm.querySelector('button[type="submit"]');
     if (submitButton) {
         // Clear existing validation errors
         clearExistingValidationErrors(containingForm);
@@ -48,124 +45,78 @@ function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
         const requiresDataAttributes = ['mx-post', 'mx-put', 'mx-patch'];
 
         if (requiresDataAttributes.includes(httpMethodAttribute)) {
-            invokeFormPost(containingForm, triggerEvent, httpMethodAttribute);
+            invokeFormPost(element, triggerEvent, httpMethodAttribute);
         } else {
-            invokeHttpRequest(containingForm, triggerEvent, httpMethodAttribute);
+            invokeHttpRequest(element, triggerEvent, httpMethodAttribute);
         }
     } else {
         console.log('no submit button found');
     }
 }
 
-function clearExistingValidationErrors(containingForm) {
-    // Remove elements with class 'validation-error-report'
-    containingForm.querySelectorAll('.validation-error-report')
-        .forEach(el => el.remove());
-
-    // Remove the 'form-field-validation-error' class from form fields
-    containingForm.querySelectorAll('.form-field-validation-error')
-        .forEach(el => el.classList.remove('form-field-validation-error'));
-}
-
 function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
-    // Establish the target URL.
-    const targetUrl = element.getAttribute(httpMethodAttribute);
-    // Establish the request type.
-    const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
-    // Attempt to display 'loading' element (indicator).
-    attemptActivateLoader(element);
 
-    const http = new XMLHttpRequest();
-    http.open(requestType, targetUrl);
-    http.setRequestHeader('Accept', 'text/html');
-    http.timeout = 10000; // 10 seconds timeout
+	// Establish the target URL.
+	const targetUrl = element.getAttribute(httpMethodAttribute);
 
-    http.onload = function() {
-        attemptHideLoader(element);
-        handleHttpResponse(http, element);
-    };
+	// Establish the request type.
+	const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
 
-    http.onerror = function() {
-        attemptHideLoader(element);
-        console.error('Request failed');
-        // Handle error (e.g., show error message to user)
-    };
-
-    http.ontimeout = function() {
-        attemptHideLoader(element);
-        console.error('Request timed out');
-        // Handle timeout (e.g., show timeout message to user)
-    };
-
-    try {
-        http.send();
-    } catch (error) {
-        attemptHideLoader(element);
-        console.error('Error sending request:', error);
-        // Handle error (e.g., show error message to user)
-    }
+	// Attempt to displaying 'loading' element (indicator).
+	attemptActivateLoader(element);
+	const http = new XMLHttpRequest();
+	http.open(requestType, targetUrl);
+	http.setRequestHeader('Accept', 'text/html');
+	http.send();
+	http.onload = function() {
+		attemptHideLoader(element);
+		handleHttpResponse(http, element);
+	}
 }
-
-
-
-
-
-
-
-
 
 function populateTargetEl(targetEl, http, element) {
     const selectStr = getAttributeValue(element, 'mx-select');
     const mxSwapStr = establishSwapStr(element);
     const selectOobStr = getAttributeValue(element, 'mx-select-oob');
 
-    // Create a document fragment to hold the response
-    const tempFragment = document.createDocumentFragment();
+    // Create a temporary div to hold the response
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = http.responseText;
-    tempFragment.appendChild(tempDiv);
 
-    try {
-        // Handle out-of-band swaps first
-        handleOobSwaps(tempFragment, selectOobStr, mxSwapStr);
-
-        // Handle the main target swap(s)
-        handleMainSwaps(targetEl, tempFragment, selectStr, mxSwapStr);
-    } catch (error) {
-        console.error('Error in populateTargetEl:', error);
-    } finally {
-        // Clean up
-        tempDiv.innerHTML = '';
-        tempFragment.textContent = '';
-    }
-}
-
-function handleOobSwaps(tempFragment, selectOobStr, defaultSwapStr) {
+    // Handle out-of-band swaps first
     if (selectOobStr) {
         const oobSelectors = selectOobStr.split(',');
         oobSelectors.forEach(selector => {
             const [oobSelectStr, oobTargetStr] = selector.trim().split(':').map(s => s.trim());
             if (oobTargetStr && oobSelectStr) {
                 const oobTargets = document.querySelectorAll(oobTargetStr);
-                const oobSelected = tempFragment.querySelector(oobSelectStr);
+                const oobSelected = tempDiv.querySelector(oobSelectStr);
                 if (oobTargets.length && oobSelected) {
                     oobTargets.forEach(oobTarget => {
-                        const oobSwapStr = oobTarget.getAttribute('mx-swap') || defaultSwapStr || 'innerHTML';
+                        const oobSwapStr = oobTarget.getAttribute('mx-swap') || mxSwapStr || 'innerHTML';
                         swapContent(oobTarget, oobSelected.cloneNode(true), oobSwapStr);
                     });
                 }
             }
         });
     }
-}
 
-function handleMainSwaps(targetEl, tempFragment, selectStr, mxSwapStr) {
-    let contents = selectStr ? tempFragment.querySelectorAll(selectStr) : [tempFragment.firstChild];
-    contents.forEach(content => {
-        if (content) {
-            swapContent(targetEl, content, mxSwapStr);
-        }
-    });
+    // Handle the main target swap
+    let content;
+
+    if (selectStr) {
+        content = tempDiv.querySelector(selectStr);
+    } else {
+        content = tempDiv;
+    }
+
+    if (content) {
+        swapContent(targetEl, content, mxSwapStr);
+    }
+
+    // Clean up
+    tempDiv.innerHTML = '';
+    tempDiv.remove();
 }
 
 function swapContent(target, source, swapMethod) {
@@ -200,6 +151,10 @@ function swapContent(target, source, swapMethod) {
 }
 
 function handleHttpResponse(http, element) {
+    // Check if the request was successful
+
+    console.log(http.status);
+    console.log(http.responseText);
 
     const containingForm = element.closest('form');
 
@@ -211,43 +166,26 @@ function handleHttpResponse(http, element) {
     }
 
     if (http.status >= 200 && http.status < 300) {
+        const mxTargetStr = getAttributeValue(element, 'mx-target');
+        let targetEl;
 
-        if (http.getResponseHeader('Content-Type').includes('text/html')) {
-            const mxTargetStr = getAttributeValue(element, 'mx-target');
-
-            let targetEl;
-
-            if (mxTargetStr) {
-                targetEl = document.querySelector(mxTargetStr);
-            } else {
-                // If no mx-target is specified, use the invoking element as the target
-                targetEl = element;
-            }
-
-            if (targetEl) {
-                console.log('populate target element');
-                populateTargetEl(targetEl, http, element);
-            }
-
-            // Perform actions based on the response
-            // For example, update the DOM, show a success message, etc.
+        if (mxTargetStr) {
+            targetEl = document.querySelector(mxTargetStr);
         } else {
-            console.log('Response is not HTML. Handle accordingly.');
-            // Handle non-HTML responses (e.g., JSON)
+            // If no mx-target is specified, use the invoking element as the target
+            targetEl = element;
         }
+
+        if (targetEl) {
+            populateTargetEl(targetEl, http, element);
+        }
+
+        // Perform actions based on the response
+        // For example, update the DOM, show a success message, etc.
     } else {
         console.error('Request failed with status:', http.status);
-        // Handle different types of errors
-        switch(http.status) {
-            case 404:
-                console.error('Resource not found');
-                break;
-            case 500:
-                console.error('Server error');
-                break;
-            default:
-                console.error('An error occurred');
-        }
+        // Handle the error
+        // For example, show an error message, log the error, etc.
 
         if (containingForm) {
             console.log('now attempting to display');
@@ -256,7 +194,13 @@ function handleHttpResponse(http, element) {
     }
 
     // Remove the loader if present
-    attemptHideLoader(element);
+    const indicatorSelector = getAttributeValue(element, 'mx-indicator');
+    if (indicatorSelector) {
+        const indicatorElement = document.querySelector(indicatorSelector);
+        if (indicatorElement) {
+            hideLoader(indicatorElement);
+        }
+    }
 }
 
 function handleValidationErrors(containingForm, validationErrors) {
@@ -280,6 +224,16 @@ function handleValidationErrors(containingForm, validationErrors) {
             }
         }
     });
+}
+
+function clearExistingValidationErrors(containingForm) {
+    // Remove elements with class 'validation-error-report'
+    containingForm.querySelectorAll('.validation-error-report')
+        .forEach(el => el.remove());
+
+    // Remove the 'form-field-validation-error' class from form fields
+    containingForm.querySelectorAll('.form-field-validation-error')
+        .forEach(el => el.classList.remove('form-field-validation-error'));
 }
 
 function attemptDisplayValidationErrors(http, element, containingForm) {
@@ -469,6 +423,76 @@ function findCss(fileName) {
     return false;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Function to handle standard DOM events based on MX attributes
 function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
 
@@ -489,6 +513,33 @@ function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
         }
 
     });
+}
+
+function handleMxTrigger(element) {
+
+    const methodAttributes = ['mx-get', 'mx-post', 'mx-put', 'mx-delete', 'mx-patch','mx-load'];
+
+    // Array of standard DOM events
+    const standardEvents = ['click', 'dblclick', 'change', 'submit', 'keyup', 'keydown', 'focus', 'blur'];
+
+    methodAttributes.forEach(attribute => {
+        if (element.hasAttribute(attribute)) {
+
+            // Establish what the trigger event is that will invoke the HTTP request for this element.
+            const triggerEvent = establishTriggerEvent(element);
+            if (standardEvents.includes(triggerEvent)) {
+                handleStandardEvents(element, triggerEvent, attribute);
+            } else if (triggerEvent === 'load') {
+                handleLoadEvents(element, attribute);
+            }
+        }
+    });
+
+}
+
+function handleLoadEvents(element, attribute) {
+    // Immediately invoke the HTTP request for 'load' events
+    invokeHttpRequest(element, 'load', attribute);
 }
 
 // Function to establish the trigger event based on element type and mx-trigger attribute
@@ -533,30 +584,28 @@ function getAttributeValue(element, attributeName) {
     return null;
 }
 
-
-
-
-
 function attemptActivateLoader(element) {
-    const indicatorSelector = getAttributeValue(element, 'mx-indicator');
-    if (indicatorSelector) {
-        const loaderEl = document.querySelector(indicatorSelector);
-        if (loaderEl) {
-            loaderEl.style.removeProperty('display');  // Removes any inline display property
-            loaderEl.classList.remove('mx-indicator-hidden');
-            loaderEl.classList.add('mx-indicator');
-        }
+	const indicatorSelector = getAttributeValue(element, 'mx-indicator');
+	if (indicatorSelector) {
+	    const loaderEl = document.querySelector(indicatorSelector);
+	    activateLoader(loaderEl);
+	}
+}
+
+// Function to activate loader on a specified element
+function activateLoader(element) {
+    if (element && element.classList.contains('mx-indicator-hidden')) {
+        element.classList.remove('mx-indicator-hidden');
+        element.classList.add('mx-indicator');
     }
 }
 
 function attemptHideLoader(element) {
-    const indicatorSelector = getAttributeValue(element, 'mx-indicator');
-    if (indicatorSelector) {
-        const loaderEl = document.querySelector(indicatorSelector);
-        if (loaderEl) {
-            hideLoader(loaderEl);  // Pass loaderEl instead of element
-        }
-    }
+	const indicatorSelector = getAttributeValue(element, 'mx-indicator');
+	if (indicatorSelector) {
+	    const loaderEl = document.querySelector(indicatorSelector);
+	    hideLoader(loaderEl);
+	}
 }
 
 // Function to hide loader on a specified element
@@ -567,104 +616,17 @@ function hideLoader(element) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function initializeTrongateMX() {
-    // Hide all loader elements
+// Wait for the document to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all elements with the mx-indicator class
     document.querySelectorAll('.mx-indicator').forEach(element => {
-        hideLoader(element);
+    	hideLoader(element);
         element.style.display = ''; // Remove inline style "display: none;"
     });
 
-    // Add the central event listeners
-    const events = ['click', 'dblclick', 'change', 'submit', 'keyup', 'keydown', 'focus', 'blur'];
-    events.forEach(eventType => {
-        document.body.addEventListener(eventType, handleTrongateMXEvent);
+    // Find all forms and elements with mx-get, mx-post, mx-put, mx-delete, mx-patch attributes
+    document.querySelectorAll('[mx-get], [mx-post], [mx-put], [mx-delete], [mx-patch], [mx-load]').forEach(element => {
+        handleMxTrigger(element);
     });
 
-    // Handle 'mx-load' elements
-    const loadEls = document.querySelectorAll('[mx-load]');
-
-    document.querySelectorAll('[mx-load]').forEach(element => {
-        handleLoadEvents(element, 'mx-load');
-    });
-}
-
-function handleLoadEvents(element, attribute) {
-    // Immediately invoke the HTTP request for 'load' events
-    console.log('now handling load event');
-    invokeHttpRequest(element, 'load', attribute);
-}
-
-function handleTrongateMXEvent(event) {
-    const methodAttributes = ['mx-get', 'mx-post', 'mx-put', 'mx-delete', 'mx-patch'];
-    const element = event.target.closest('[' + methodAttributes.join('],[') + ']');
-
-    if (!element) return; // If no matching element found, exit the function
-
-    const triggerEvent = establishTriggerEvent(element);
-
-    if (triggerEvent !== event.type) return; // If the event doesn't match the trigger, exit the function
-
-    // Find which mx-* attribute triggered this event
-    const attribute = methodAttributes.find(attr => element.hasAttribute(attr));
-
-    event.preventDefault(); // Prevent default behavior
-
-    if (element.tagName.toLowerCase() === 'form' || element.closest('form')) {
-        mxSubmitForm(element, triggerEvent, attribute);
-    } else {
-        invokeHttpRequest(element, triggerEvent, attribute);
-    }
-}
-
-// Call this function when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeTrongateMX);
+});

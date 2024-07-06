@@ -1,0 +1,1 @@
+Can you provide the raw HTML content for the 'Automatic Content Loading on Page Load' section of the Trongate MX documentation, including all headings, paragraphs, code examples, and lists, but excluding any surrounding HTML, head, or body tags?
