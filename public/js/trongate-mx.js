@@ -204,21 +204,6 @@ function handleOobSwaps(tempFragment, selectOobStr) {
     });
 }
 
-// function swapElements(select, target, swap) {
-//     // Implement the logic to swap the elements based on the provided information
-//     // This could involve using querySelector, innerHTML, outerHTML, etc.
-//     const sourceElement = document.querySelector(select);
-//     const destinationElement = document.querySelector(target);
-
-//     if (swap === 'innerHTML') {
-//         destinationElement.innerHTML = sourceElement.innerHTML;
-//     } else if (swap === 'outerHTML') {
-//         destinationElement.outerHTML = sourceElement.outerHTML;
-//     } else if (swap === 'innerText') {
-//         destinationElement.innerText = sourceElement.innerText;
-//     }
-// }
-
 function executeOobMethodology1(selectOobStr) {
     /*
     Example use case:
@@ -307,6 +292,32 @@ function executeOobMethodology2(selectOobStr) {
 }
 
 function executeOobMethodology3(selectOobStr) {
+
+    /*
+    Example use case:
+    For an attribute like:
+    mx-select-oob="[{select:#source-element1,target:#destination-element1,swap:outerHTML},{select:#source-element2,target:#destination-element2,swap:innerText}]"
+    
+    This function will return:
+    [
+        {
+            select: '#source-element1',
+            target: '#destination-element1',
+            swap: 'outerHTML'
+        },
+        {
+            select: '#source-element2',
+            target: '#destination-element2',
+            swap: 'innerText'
+        }
+    ]
+
+    This could be used in any scenario where multiple content swaps need to be performed:
+    - '#source-element1' and '#source-element2' are the IDs of the elements containing the original content
+    - '#destination-element1' and '#destination-element2' are the IDs of the elements where content should be placed
+    - 'outerHTML' and 'innerText' specify how the content should be swapped
+    */
+
     try {
         // Use makeValidJsonString to fix the input string
         const fixedJsonStr = makeValidJsonString(selectOobStr);
