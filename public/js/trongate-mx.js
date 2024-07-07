@@ -1,3 +1,5 @@
+const methodAttributes = ['mx-get', 'mx-post', 'mx-put', 'mx-delete', 'mx-patch'];
+
 function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
     console.log('look at me.. I am posting a form');
 
@@ -50,7 +52,7 @@ function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
         if (requiresDataAttributes.includes(httpMethodAttribute)) {
             invokeFormPost(containingForm, triggerEvent, httpMethodAttribute);
         } else {
-            invokeHttpRequest(containingForm, triggerEvent, httpMethodAttribute);
+            invokeHttpRequest(containingForm, httpMethodAttribute);
         }
     } else {
         console.log('no submit button found');
@@ -67,7 +69,7 @@ function clearExistingValidationErrors(containingForm) {
         .forEach(el => el.classList.remove('form-field-validation-error'));
 }
 
-function invokeHttpRequest(element, triggerEvent, httpMethodAttribute) {
+function invokeHttpRequest(element, httpMethodAttribute) {
     // Establish the target URL.
     const targetUrl = element.getAttribute(httpMethodAttribute);
     // Establish the request type.
@@ -485,7 +487,7 @@ function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
 
         } else {
         	// This does not belong to a form!
-        	invokeHttpRequest(element, triggerEvent, httpMethodAttribute);
+        	invokeHttpRequest(element, httpMethodAttribute);
         }
 
     });
@@ -617,6 +619,48 @@ function hideLoader(element) {
 
 
 
+
+
+function handlePageLoadedEvents(element) {
+    // Immediately invoke the HTTP request for (page) 'load' events
+
+    console.log('now handling load event');
+
+    console.log(element.outerHTML);
+
+    // Find which out which kind of HTTP request should be invoked
+    const attribute = methodAttributes.find(attr => element.hasAttribute(attr));
+
+    event.preventDefault(); // Prevent default behavior
+
+    console.log('we have ' + attribute)
+
+    invokeHttpRequest(element, attribute);
+}
+
+function handleTrongateMXEvent(event) {
+    
+    const element = event.target.closest('[' + methodAttributes.join('],[') + ']');
+
+    if (!element) return; // If no matching element found, exit the function
+
+    const triggerEvent = establishTriggerEvent(element);
+    console.log('the trigger event is ' + triggerEvent)
+
+    if (triggerEvent !== event.type) return; // If the event doesn't match the trigger, exit the function
+
+    // Find which out which kind of HTTP request should be invoked
+    const attribute = methodAttributes.find(attr => element.hasAttribute(attr));
+
+    event.preventDefault(); // Prevent default behavior
+
+    if (element.tagName.toLowerCase() === 'form' || element.closest('form')) {
+        mxSubmitForm(element, triggerEvent, attribute);
+    } else {
+        invokeHttpRequest(element, attribute);
+    }
+}
+
 function initializeTrongateMX() {
     // Hide all loader elements
     document.querySelectorAll('.mx-indicator').forEach(element => {
@@ -630,40 +674,26 @@ function initializeTrongateMX() {
         document.body.addEventListener(eventType, handleTrongateMXEvent);
     });
 
+    // Handle load events (mx-trigger="load")
+    console.log('page loaded')
+    const loadTriggerElements = document.querySelectorAll('[mx-trigger*="load"]');
+
+    console.log(loadTriggerElements.length);
+
+    loadTriggerElements.forEach(element => {
+        // Handle elements with 'load' in their mx-trigger attribute
+        handlePageLoadedEvents(element);
+    });
+
+/*
     // Handle 'mx-load' elements
     const loadEls = document.querySelectorAll('[mx-load]');
 
     document.querySelectorAll('[mx-load]').forEach(element => {
-        handleLoadEvents(element, 'mx-load');
+        handlePageLoadedEvents(element, 'mx-load');
     });
-}
+*/
 
-function handleLoadEvents(element, attribute) {
-    // Immediately invoke the HTTP request for 'load' events
-    console.log('now handling load event');
-    invokeHttpRequest(element, 'load', attribute);
-}
-
-function handleTrongateMXEvent(event) {
-    const methodAttributes = ['mx-get', 'mx-post', 'mx-put', 'mx-delete', 'mx-patch'];
-    const element = event.target.closest('[' + methodAttributes.join('],[') + ']');
-
-    if (!element) return; // If no matching element found, exit the function
-
-    const triggerEvent = establishTriggerEvent(element);
-
-    if (triggerEvent !== event.type) return; // If the event doesn't match the trigger, exit the function
-
-    // Find which mx-* attribute triggered this event
-    const attribute = methodAttributes.find(attr => element.hasAttribute(attr));
-
-    event.preventDefault(); // Prevent default behavior
-
-    if (element.tagName.toLowerCase() === 'form' || element.closest('form')) {
-        mxSubmitForm(element, triggerEvent, attribute);
-    } else {
-        invokeHttpRequest(element, triggerEvent, attribute);
-    }
 }
 
 // Call this function when the DOM is loaded
