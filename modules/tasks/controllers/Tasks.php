@@ -190,9 +190,9 @@ none,does not append content from response (Out of Band Swaps and Response Heade
     function delete_task() {
         //sleep(3);
         http_response_code(200);
-
+        echo '<h1>Delete Task</h1>';
         echo '<div id="happy">oh what a beautiful day</div>';
-        echo '<h1 id="sad">new headline</h1>';
+        echo '<div id="sad">and heaven knows I am miserable now</div>';
         echo '<div id="response">delete ahoy</div>';
         die();
 

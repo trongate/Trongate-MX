@@ -17,7 +17,7 @@
 		    	mx-get="http://localhost/trongate_mx/tasks/delete_task" 
 		        mx-target="#box1"
 		        mx-select="#happy"
-		        mx-select-oob="[{select:#source-element1,target:#destination-element1,swap:outerHTML},{select:#source-element2,target:#destination-element2,swap:innerText}]"
+		        mx-select-oob="[{select:#sad,target:#box2,swap:outerHTML},{select:h1,target:h1,swap:outerHTML}]"
 		        mx-indicator=".spinner">Delete</button>
 		    </td>
 	    </tr>	

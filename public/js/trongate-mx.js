@@ -162,10 +162,11 @@ console.log('********************************************')
 }
 
 function handleOobSwaps(tempFragment, selectOobStr) {
-
-    if(!selectOobStr) {
+    if (!selectOobStr) {
         return;
     }
+
+    console.log(selectOobStr)
 
     // Evaluate the 'mx-select-oob' value to determine what technique to use for handling oob swaps.
     const methodology = determineOobMethodology(selectOobStr);
@@ -174,30 +175,49 @@ function handleOobSwaps(tempFragment, selectOobStr) {
         return;
     }
 
-    let oobDataObj = {}
+    const oobDataObjs = [];
 
-
-    // NOTE:  For this to work, we need to establish; 1). select, 2). target, 3, swap
     if (methodology === 1) {
         console.log('using methodology 1...');
-        oobDataObj = executeOobMethodology1(selectOobStr);        
-    }
-
-    if (methodology === 2) {
+        oobDataObjs.push(executeOobMethodology1(selectOobStr));
+    } else if (methodology === 2) {
         console.log('using methodology 2...');
-        oobDataObj = executeOobMethodology2(selectOobStr);  
-    }
-
-    if (methodology === 3) {
+        oobDataObjs.push(executeOobMethodology2(selectOobStr));
+    } else if (methodology === 3) {
         console.log('using methodology 3...');
-        const oobDataObjs = executeOobMethodology3(selectOobStr); 
-        console.log(oobDataObjs); 
+        oobDataObjs.push(...executeOobMethodology3(selectOobStr));
     }
 
-    
+    // Loop through the oobDataObjs array and perform the swaps
+    oobDataObjs.forEach(obj => {
+        //swapElements(obj.select, obj.target, obj.swap);
 
+        let oobSelected;
+        oobSelected = tempFragment.querySelector(obj.select);
 
+        if(!oobSelected) {
+            oobSelected = tempFragment.firstChild;
+        }
+
+        const oobTarget = document.querySelector(obj.target);
+        swapContent(oobTarget, oobSelected.cloneNode(true), obj.swap);
+    });
 }
+
+// function swapElements(select, target, swap) {
+//     // Implement the logic to swap the elements based on the provided information
+//     // This could involve using querySelector, innerHTML, outerHTML, etc.
+//     const sourceElement = document.querySelector(select);
+//     const destinationElement = document.querySelector(target);
+
+//     if (swap === 'innerHTML') {
+//         destinationElement.innerHTML = sourceElement.innerHTML;
+//     } else if (swap === 'outerHTML') {
+//         destinationElement.outerHTML = sourceElement.outerHTML;
+//     } else if (swap === 'innerText') {
+//         destinationElement.innerText = sourceElement.innerText;
+//     }
+// }
 
 function executeOobMethodology1(selectOobStr) {
     /*
