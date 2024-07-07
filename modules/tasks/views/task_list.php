@@ -4,6 +4,7 @@
 	    <tr>
 		    <th>ID</th>
 		    <th>Task Title</th>
+		    <th>Action</th>
 	    </tr>		
 	</thead>
 	<tbody>
@@ -12,6 +13,13 @@
 	    <tr>
 		    <td><?= $row->id ?></td>
 		    <td><?= out($row->task_title) ?></td>
+		    <td class="text-center"><button class="mt-0" 
+		    	mx-get="http://localhost/trongate_mx/tasks/delete_task" 
+		        mx-target="#box1"
+		        mx-select="#happy"
+		        mx-select-oob="#sad:h1"
+		        mx-indicator=".spinner">Delete</button>
+		    </td>
 	    </tr>	
 	    <?php
 	    }

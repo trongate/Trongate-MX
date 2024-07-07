@@ -117,19 +117,38 @@ function invokeHttpRequest(element, httpMethodAttribute) {
 
 
 function populateTargetEl(targetEl, http, element) {
-    const selectStr = getAttributeValue(element, 'mx-select');
+
+console.log(element.outerHTML);
+
+    //const selectStr = getAttributeValue(element, 'mx-select');
+    //const selectStr = 'blabla';
+    const selectStr = element.getAttribute('mx-select');
+    if(!selectStr) {
+        console.log('we have no select string')
+    }
+
+
+console.log('selectStr is ' + selectStr);
+
     const mxSwapStr = establishSwapStr(element);
-    const selectOobStr = getAttributeValue(element, 'mx-select-oob');
+    //const selectOobStr = getAttributeValue(element, 'mx-select-oob');
+    const selectOobStr = element.getAttribute('mx-select-oob');
 
     // Create a document fragment to hold the response
     const tempFragment = document.createDocumentFragment();
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = http.responseText;
+
+console.log('********************************************')
+console.log(http.responseText)
+console.log('********************************************')
+
+
     tempFragment.appendChild(tempDiv);
 
     try {
         // Handle out-of-band swaps first
-        handleOobSwaps(tempFragment, selectOobStr, mxSwapStr);
+        handleOobSwaps(tempFragment, selectOobStr, 'innerHTML');
 
         // Handle the main target swap(s)
         handleMainSwaps(targetEl, tempFragment, selectStr, mxSwapStr);
@@ -152,10 +171,16 @@ function handleOobSwaps(tempFragment, selectOobStr, defaultSwapStr) {
                 const oobSelected = tempFragment.querySelector(oobSelectStr);
                 if (oobTargets.length && oobSelected) {
                     oobTargets.forEach(oobTarget => {
-                        const oobSwapStr = oobTarget.getAttribute('mx-swap') || defaultSwapStr || 'innerHTML';
-                        swapContent(oobTarget, oobSelected.cloneNode(true), oobSwapStr);
+                        swapContent(oobTarget, oobSelected.cloneNode(true), defaultSwapStr);
                     });
                 }
+            } else {
+                console.log('cannot run handleOobSwaps perfectly since we dont have...');
+                const oobSelected = tempFragment.firstChild;
+                
+                // Take the entire response body and populate the oob element with that (.innerHTML)
+                const oobTarget = document.querySelector(oobSelectStr)
+                swapContent(oobTarget, oobSelected.cloneNode(true), defaultSwapStr);
             }
         });
     }
