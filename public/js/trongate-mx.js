@@ -148,7 +148,7 @@ console.log('********************************************')
 
     try {
         // Handle out-of-band swaps first
-        handleOobSwaps(tempFragment, selectOobStr, 'innerHTML');
+        handleOobSwaps(tempFragment, selectOobStr);
 
         // Handle the main target swap(s)
         handleMainSwaps(targetEl, tempFragment, selectStr, mxSwapStr);
@@ -161,7 +161,231 @@ console.log('********************************************')
     }
 }
 
-function handleOobSwaps(tempFragment, selectOobStr, defaultSwapStr) {
+function handleOobSwaps(tempFragment, selectOobStr) {
+
+    if(!selectOobStr) {
+        return;
+    }
+
+    // Evaluate the 'mx-select-oob' value to determine what technique to use for handling oob swaps.
+    const methodology = determineOobMethodology(selectOobStr);
+
+    if (!methodology) {
+        return;
+    }
+
+    let oobDataObj = {}
+
+
+    // NOTE:  For this to work, we need to establish; 1). select, 2). target, 3, swap
+    if (methodology === 1) {
+        console.log('using methodology 1...');
+        oobDataObj = executeOobMethodology1(selectOobStr);        
+    }
+
+    if (methodology === 2) {
+        console.log('using methodology 2...');
+        oobDataObj = executeOobMethodology2(selectOobStr);  
+    }
+
+    if (methodology === 3) {
+        console.log('using methodology 3...');
+        const oobDataObjs = executeOobMethodology3(selectOobStr); 
+        console.log(oobDataObjs); 
+    }
+
+    
+
+
+}
+
+function executeOobMethodology1(selectOobStr) {
+    /*
+    Example use case:
+    For an attribute like:
+    mx-select-oob="#source-element:#destination-element"
+    
+    This function will return:
+    {
+        select: '#source-element',
+        target: '#destination-element',
+        swap: 'innerHTML'
+    }
+
+    This could be used in any scenario where content needs to be moved or copied:
+    - '#source-element' is the ID of the element containing the original content
+    - '#destination-element' is the ID of the element where content should be placed
+    - 'innerHTML' specifies that the entire content should be swapped
+    */
+
+    const [select, target] = selectOobStr.split(':');
+
+    const oobDataObj = {
+        select,
+        target,
+        swap: "innerHTML"
+    }
+    return oobDataObj;
+}
+
+function executeOobMethodology2(selectOobStr) {
+    /*
+    Example use case:
+    For an attribute like:
+    mx-select-oob="select:#source-element,target:#destination-element,swap:innerHTML"
+    
+    This function will return:
+    {
+        select: '#source-element',
+        target: '#destination-element',
+        swap: 'innerHTML'
+    }
+
+    This could be used in any scenario where content needs to be moved or copied:
+    - '#source-element' is the ID of the element containing the original content
+    - '#destination-element' is the ID of the element where content should be placed
+    - 'innerHTML' specifies that the entire content should be swapped
+
+    If 'swap' is omitted, it defaults to 'innerHTML'
+    */
+
+    // Split the string into key-value pairs
+    const pairs = selectOobStr.split(',');
+    
+    // Initialize the oobDataObj with default swap value
+    const oobDataObj = {
+        select: '',
+        target: '',
+        swap: 'innerHTML'  // Default value
+    };
+
+    // Process each key-value pair
+    pairs.forEach(pair => {
+        const [key, value] = pair.split(':').map(item => item.trim());
+        
+        // Assign values to oobDataObj based on the key
+        switch(key) {
+            case 'select':
+                oobDataObj.select = value;
+                break;
+            case 'target':
+                oobDataObj.target = value;
+                break;
+            case 'swap':
+                oobDataObj.swap = value;
+                break;
+            // Ignore any other keys
+        }
+    });
+
+    // Validate that we have at least select and target
+    if (!oobDataObj.select || !oobDataObj.target) {
+        throw new Error('Invalid mx-select-oob syntax. Both "select" and "target" must be specified.');
+    }
+
+    return oobDataObj;
+}
+
+function executeOobMethodology3(selectOobStr) {
+    try {
+        // Use makeValidJsonString to fix the input string
+        const fixedJsonStr = makeValidJsonString(selectOobStr);
+
+        // Parse the fixed JSON string
+        const oobDataObjs = JSON.parse(fixedJsonStr);
+
+        // Validate that the input is an array
+        if (!Array.isArray(oobDataObjs)) {
+            throw new Error('Invalid mx-select-oob syntax. Expected an array of objects.');
+        }
+
+        // Process each object in the array
+        return oobDataObjs.map(obj => {
+            // Ensure that the required properties are present
+            if (!obj.select || !obj.target) {
+                throw new Error('Invalid mx-select-oob syntax. Both "select" and "target" must be specified.');
+            }
+
+            // Set a default swap value if not provided
+            obj.swap = obj.swap || 'innerHTML';
+
+            return obj;
+        });
+    } catch (e) {
+        // Handle any errors
+        console.error('Error processing mx-select-oob:', e);
+        return [];
+    }
+}
+
+function makeValidJsonString(inputString) {
+    // Helper function to check if a string is a valid JSON
+    function isValidJson(str) {
+        try {
+            JSON.parse(str);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // If the input string is already a valid JSON, return it unmodified
+    if (isValidJson(inputString)) {
+        return inputString;
+    }
+
+    // Attempt to modify the string to make it a valid JSON
+    try {
+        // Use a regular expression to find keys and values that are not quoted and quote them
+        const fixedString = inputString.replace(/([{,]\s*)([^:{}\[\],\s"']+)(\s*:)/g, '$1"$2"$3')
+                                       .replace(/(:\s*)([^,\[\]{}"\s]+)(\s*[}\],])/g, '$1"$2"$3');
+
+        // Check if the fixed string is a valid JSON
+        if (isValidJson(fixedString)) {
+            return fixedString;
+        } else {
+            throw new Error('Unable to fix the string to a valid JSON format.');
+        }
+    } catch (e) {
+        throw new Error('Failed to process the input string. Please ensure it is in a proper format.');
+    }
+}
+
+function determineOobMethodology(attributeValue) {
+    // Trim the attribute value to remove any leading or trailing whitespace
+    attributeValue = attributeValue.trim();
+
+    // Check for Methodology 3 (JSON array)
+    if (attributeValue.startsWith('[') && attributeValue.endsWith(']')) {
+        console.log(attributeValue)
+        try {
+            return 3;
+        } catch (e) {
+            // If it's not valid JSON, it's not methodology 3
+        }
+    }
+
+    // Check for Methodology 2 (key-value pairs)
+    if (attributeValue.includes(',') && attributeValue.includes(':')) {
+        const parts = attributeValue.split(',');
+        const hasAllRequiredKeys = parts.some(part => part.includes('select:')) &&
+                                   parts.some(part => part.includes('target:')) &&
+                                   parts.some(part => part.includes('swap:'));
+        if (hasAllRequiredKeys) {
+            return 2;
+        }
+    }
+
+    // Check for Methodology 1 (basic syntax)
+    if (attributeValue.includes(':') && attributeValue.split(':').length === 2) {
+        return 1;
+    }
+
+    // If none of the above conditions are met, return null or throw an error
+    return null; // or throw new Error('Invalid mx-select-oob syntax');
+}
+
+function handleOobSwapsORIG(tempFragment, selectOobStr, defaultSwapStr) {
     if (selectOobStr) {
         const oobSelectors = selectOobStr.split(',');
         oobSelectors.forEach(selector => {
