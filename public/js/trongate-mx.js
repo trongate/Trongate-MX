@@ -212,6 +212,8 @@ function handleHttpResponse(http, element) {
         }
     }
 
+    element.classList.remove('blink');
+
     if (http.status >= 200 && http.status < 300) {
 
         if (http.getResponseHeader('Content-Type').includes('text/html')) {

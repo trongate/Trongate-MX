@@ -180,7 +180,7 @@ none,does not append content from response (Out of Band Swaps and Response Heade
     }
 
     function list() {
-        sleep(1);
+        sleep(2);
         $data['rows'] = $this->model->get('id');
         $data['view_file'] = 'task_list';
     	$data['view_module'] = 'tasks';
