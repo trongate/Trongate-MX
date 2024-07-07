@@ -1,3 +1,111 @@
+TO DO....
+
+
+1).  BUILD THE FOLLOWING 'mx' ATTRIBUTES:
+
+* mx-on-success
+
+* mx-token
+
+* mx-vals?
+
+
+
+2). MODIFY THE TRONGATE FRAMEWORK SO THAT IT RECOGNISES REQUESTS MADE BY TRONGATE_MX.
+
+When view files are served, if the http request was made by Trongate MX, check for alternative view file that ends with '_mx.php', and 
+server that file - if we have it.
+
+
+
+3).  HANDLE / FINISH VALIDATION ERRORS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div id="message-area"></div>
 
 <table id="items-table">

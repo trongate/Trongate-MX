@@ -118,31 +118,19 @@ function invokeHttpRequest(element, httpMethodAttribute) {
 
 function populateTargetEl(targetEl, http, element) {
 
-console.log(element.outerHTML);
-
-    //const selectStr = getAttributeValue(element, 'mx-select');
-    //const selectStr = 'blabla';
     const selectStr = element.getAttribute('mx-select');
     if(!selectStr) {
         console.log('we have no select string')
     }
 
 
-console.log('selectStr is ' + selectStr);
-
     const mxSwapStr = establishSwapStr(element);
-    //const selectOobStr = getAttributeValue(element, 'mx-select-oob');
     const selectOobStr = element.getAttribute('mx-select-oob');
 
     // Create a document fragment to hold the response
     const tempFragment = document.createDocumentFragment();
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = http.responseText;
-
-console.log('********************************************')
-console.log(http.responseText)
-console.log('********************************************')
-
 
     tempFragment.appendChild(tempDiv);
 
@@ -166,8 +154,6 @@ function handleOobSwaps(tempFragment, selectOobStr) {
         return;
     }
 
-    console.log(selectOobStr)
-
     // Evaluate the 'mx-select-oob' value to determine what technique to use for handling oob swaps.
     const methodology = determineOobMethodology(selectOobStr);
 
@@ -178,13 +164,10 @@ function handleOobSwaps(tempFragment, selectOobStr) {
     const oobDataObjs = [];
 
     if (methodology === 1) {
-        console.log('using methodology 1...');
         oobDataObjs.push(executeOobMethodology1(selectOobStr));
     } else if (methodology === 2) {
-        console.log('using methodology 2...');
         oobDataObjs.push(executeOobMethodology2(selectOobStr));
     } else if (methodology === 3) {
-        console.log('using methodology 3...');
         oobDataObjs.push(...executeOobMethodology3(selectOobStr));
     }
 
