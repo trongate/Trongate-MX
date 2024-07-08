@@ -15,7 +15,12 @@ server that file - if we have it.
 3).  HANDLE / FINISH VALIDATION ERRORS
 
 
-
+<button hx-get="http://localhost/trongate_mx/tasks/read_headers"
+        hx-target="#result"
+        hx-indicator=".spinner"
+        hx-headers='{"City": "New York", "Country": "USA", "Language": "English"}'>
+    Fetch Content
+</button>
 
 
 

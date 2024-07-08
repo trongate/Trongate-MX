@@ -27,6 +27,28 @@ function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
         http.setRequestHeader('trongateToken', mxToken);
     }
 
+    // Check for mx-headers attribute
+    const mxHeadersAttr = containingForm.getAttribute('mx-headers');
+    if (mxHeadersAttr) {
+        try {
+            // Use makeValidJsonString to fix the input string
+            const fixedJsonStr = makeValidJsonString(mxHeadersAttr);
+            const headersArray = JSON.parse(fixedJsonStr);
+
+            if (Array.isArray(headersArray)) {
+                headersArray.forEach(header => {
+                    if (header.key && header.value) {
+                        http.setRequestHeader(header.key, header.value);
+                    }
+                });
+            } else {
+                console.error('mx-headers attribute should be an array of objects.');
+            }
+        } catch (error) {
+            console.error('Error parsing or fixing mx-headers attribute:', error);
+        }
+    }
+
     http.onload = function() {
         attemptHideLoader(containingForm);
         
@@ -50,6 +72,7 @@ function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
         // Handle timeout (e.g., show timeout message to user)
     };
 }
+
 
 function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
     const containingForm = element.closest('form');
@@ -91,8 +114,10 @@ function clearExistingValidationErrors(containingForm) {
 function invokeHttpRequest(element, httpMethodAttribute) {
     // Establish the target URL.
     const targetUrl = element.getAttribute(httpMethodAttribute);
+    
     // Establish the request type.
     const requestType = httpMethodAttribute.replace('mx-', '').toUpperCase();
+    
     // Attempt to display 'loading' element (indicator).
     attemptActivateLoader(element);
 
@@ -106,6 +131,28 @@ function invokeHttpRequest(element, httpMethodAttribute) {
     if (mxToken) {
         // Attach Trongate Token as a custom header
         http.setRequestHeader('trongateToken', mxToken);
+    }
+
+    // Check for mx-headers attribute
+    const mxHeadersAttr = element.getAttribute('mx-headers');
+    if (mxHeadersAttr) {
+        try {
+            // Use makeValidJsonString to fix the input string
+            const fixedJsonStr = makeValidJsonString(mxHeadersAttr);
+            const headersArray = JSON.parse(fixedJsonStr);
+
+            if (Array.isArray(headersArray)) {
+                headersArray.forEach(header => {
+                    if (header.key && header.value) {
+                        http.setRequestHeader(header.key, header.value);
+                    }
+                });
+            } else {
+                console.error('mx-headers attribute should be an array of objects.');
+            }
+        } catch (error) {
+            console.error('Error parsing or fixing mx-headers attribute:', error);
+        }
     }
 
     http.onload = function() {
@@ -133,6 +180,7 @@ function invokeHttpRequest(element, httpMethodAttribute) {
         // Handle error (e.g., show error message to user)
     }
 }
+
 
 
 

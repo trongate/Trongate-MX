@@ -5,6 +5,14 @@ class Tasks extends Trongate {
     //private $endpoint_url = BASE_URL.'tasks/submit_task';
     private $endpoint_url = BASE_URL.'tasks/demo';
 
+    public function dev4() {
+
+        $this->module('trongate_security');
+        $data['token'] = $this->trongate_security->_make_sure_allowed();
+        $data['view_file'] = 'dev4';
+        $this->template('public', $data);
+    }
+
     public function dev3() {
 
         $this->module('trongate_security');
@@ -14,14 +22,30 @@ class Tasks extends Trongate {
     }
 
     public function read_token() {
-
         $token = (isset($_SERVER['HTTP_TRONGATETOKEN']) ? $_SERVER['HTTP_TRONGATETOKEN'] : false);
         var_dump($token); die();
-
-        $this->module('trongate_tokens');
-        $token = $this->trongate_tokens->_attempt_get_valid_token();
-        var_dump($token);
     }
+
+public function read_headers() {
+    // Initialize an array to store header information
+    $headers = [];
+
+    // Check for specific headers and add them to the $headers array
+    if (isset($_SERVER['HTTP_CITY'])) {
+        $headers['City'] = htmlspecialchars($_SERVER['HTTP_CITY'], ENT_QUOTES, 'UTF-8');
+    }
+
+    if (isset($_SERVER['HTTP_COUNTRY'])) {
+        $headers['Country'] = htmlspecialchars($_SERVER['HTTP_COUNTRY'], ENT_QUOTES, 'UTF-8');
+    }
+
+    if (isset($_SERVER['HTTP_LANGUAGE'])) {
+        $headers['Language'] = htmlspecialchars($_SERVER['HTTP_LANGUAGE'], ENT_QUOTES, 'UTF-8');
+    }
+
+    // Return the headers array
+    json($headers);
+}
 
     public function dev2() {
         $data['view_file'] = 'dev2';
