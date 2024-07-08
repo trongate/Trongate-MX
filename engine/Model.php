@@ -715,7 +715,7 @@ class Model {
      * value to 1.
      *
      * @param string $table_name The name of the table to resequence IDs for.
-     * @return bool True upon successful resequencing.
+     * @return bool True upon successful resequencing, false otherwise.
      * @throws Exception If the operation fails.
      *
      * @note This method should be used with caution and may produce undesired consequences.

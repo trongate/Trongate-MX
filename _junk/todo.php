@@ -3,13 +3,7 @@ TO DO....
 
 1).  BUILD THE FOLLOWING 'mx' ATTRIBUTES:
 
-* mx-on-success
-
-* mx-token
-
 * mx-vals?
-
-
 
 2). MODIFY THE TRONGATE FRAMEWORK SO THAT IT RECOGNISES REQUESTS MADE BY TRONGATE_MX.
 
@@ -25,6 +19,18 @@ server that file - if we have it.
 
 
 
+
+
+
+
+
+
+
+
+
+* mx-token
+        $token = (isset($_SERVER['HTTP_TRONGATETOKEN']) ? $_SERVER['HTTP_TRONGATETOKEN'] : false);
+        var_dump($token); die();
 
 
 

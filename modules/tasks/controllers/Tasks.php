@@ -5,6 +5,24 @@ class Tasks extends Trongate {
     //private $endpoint_url = BASE_URL.'tasks/submit_task';
     private $endpoint_url = BASE_URL.'tasks/demo';
 
+    public function dev3() {
+
+        $this->module('trongate_security');
+        $data['token'] = $this->trongate_security->_make_sure_allowed();
+        $data['view_file'] = 'dev3';
+        $this->template('public', $data);
+    }
+
+    public function read_token() {
+
+        $token = (isset($_SERVER['HTTP_TRONGATETOKEN']) ? $_SERVER['HTTP_TRONGATETOKEN'] : false);
+        var_dump($token); die();
+
+        $this->module('trongate_tokens');
+        $token = $this->trongate_tokens->_attempt_get_valid_token();
+        var_dump($token);
+    }
+
     public function dev2() {
         $data['view_file'] = 'dev2';
         $this->template('public', $data);

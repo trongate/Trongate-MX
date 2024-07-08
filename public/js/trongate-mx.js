@@ -20,6 +20,13 @@ function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
     // No need to set Content-Type header when sending FormData
     http.send(formData);
 
+    // Check if 'mx-token' attribute exists
+    const mxToken = containingForm.getAttribute('mx-token');
+    if (mxToken) {
+        // Attach Trongate Token as a custom header
+        http.setRequestHeader('trongateToken', mxToken);
+    }
+
     http.onload = function() {
         attemptHideLoader(containingForm);
         
@@ -29,6 +36,18 @@ function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
         }
 
         handleHttpResponse(http, containingForm);
+    };
+
+    http.onerror = function() {
+        attemptHideLoader(containingForm);
+        console.error('Form request failed');
+        // Handle error (e.g., show error message to user)
+    };
+
+    http.ontimeout = function() {
+        attemptHideLoader(containingForm);
+        console.error('Form request timed out');
+        // Handle timeout (e.g., show timeout message to user)
     };
 }
 
@@ -81,6 +100,13 @@ function invokeHttpRequest(element, httpMethodAttribute) {
     http.open(requestType, targetUrl);
     http.setRequestHeader('Accept', 'text/html');
     http.timeout = 10000; // 10 seconds timeout
+
+    // Check if 'mx-token' attribute exists
+    const mxToken = element.getAttribute('mx-token');
+    if (mxToken) {
+        // Attach Trongate Token as a custom header
+        http.setRequestHeader('trongateToken', mxToken);
+    }
 
     http.onload = function() {
         attemptHideLoader(element);
