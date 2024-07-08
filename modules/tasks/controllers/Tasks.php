@@ -5,6 +5,11 @@ class Tasks extends Trongate {
     //private $endpoint_url = BASE_URL.'tasks/submit_task';
     private $endpoint_url = BASE_URL.'tasks/demo';
 
+    public function dev2() {
+        $data['view_file'] = 'dev2';
+        $this->template('public', $data);
+    }
+
     public function dev() {
         $data['view_file'] = 'dev';
         $this->template('public', $data);
@@ -180,7 +185,7 @@ none,does not append content from response (Out of Band Swaps and Response Heade
     }
 
     function list() {
-        sleep(2);
+        //sleep(2);
         $data['rows'] = $this->model->get('id');
         $data['view_file'] = 'task_list';
     	$data['view_module'] = 'tasks';
