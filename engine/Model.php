@@ -729,6 +729,8 @@ class Model {
 
         $num_rows = $this->count($table_name);
         if ($num_rows === 0) {
+            $sql = 'ALTER TABLE '.$table_name.' AUTO_INCREMENT = 1';
+            $this->query($sql);
             return true;
         }
         
@@ -772,6 +774,9 @@ class Model {
             // Commit transaction
             $this->dbh->commit();
             
+            $sql = 'ALTER TABLE '.$table_name.' AUTO_INCREMENT = 1';
+            $this->query($sql);
+
             // Return true upon successful resequencing
             return true;
         } catch (Exception $e) {

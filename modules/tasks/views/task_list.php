@@ -14,11 +14,9 @@
 		    <td><?= $row->id ?></td>
 		    <td><?= out($row->task_title) ?></td>
 		    <td class="text-center"><button class="mt-0"  
-		    	mx-get="http://localhost/trongate_mx/tasks/delete_task" 
-		        mx-target="#box1"
-		        mx-select="#happy"
-		        mx-select-oob="[{select:#sad,target:#box2,swap:outerHTML},{select:h1,target:h1,swap:outerHTML}]"
-		        mx-indicator=".spinner">Delete</button>
+		    	mx-get="http://localhost/trongate_mx/tasks/delete_task/<?= $row->id ?>" 
+		        mx-target="#page-top" 
+		        mx-on-success="#result">Delete</button>
 		    </td>
 	    </tr>	
 	    <?php

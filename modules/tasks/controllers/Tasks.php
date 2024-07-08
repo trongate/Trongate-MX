@@ -194,27 +194,22 @@ none,does not append content from response (Out of Band Swaps and Response Heade
 
     function delete_task() {
         //sleep(3);
-        http_response_code(200);
-        echo '<h1>Delete Task</h1>';
-        echo '<div id="happy">oh what a beautiful day</div>';
-        echo '<div id="sad">and heaven knows I am miserable now</div>';
-        echo '<div id="response">delete ahoy</div>';
-        die();
+        
+        // echo '<h1 class="text-center">Delete Task</h1>';
+        // echo '<div id="happy">oh what a beautiful day</div>';
+        // echo '<div id="sad">and heaven knows I am miserable now</div>';
+        // echo '<div id="response">delete ahoy</div>';
+        // die();
 
         $update_id = segment(3, 'int');
-
-
         $this->model->delete($update_id);
+        http_response_code(200);
+        echo '<p class="text-center" style="color: green">The task was successfully deleted for .'.$update_id.'</p>';
+    }
 
-            $rows = $this->model->get('id');
-            echo '<div id="updated-list">';
-            echo '<ul>';
-            foreach($rows as $row) {
-                echo '<li>'.$row->task_title.' <i class=\'fa fa-trash\'></i></li>';
-            }
-            echo '</ul></div>';
-
-
+    public function resequence() {
+        $this->model->resequence_ids('tasks');
+        redirect(previous_url());
     }
 
     function submit_task() {

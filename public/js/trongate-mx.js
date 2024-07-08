@@ -496,8 +496,10 @@ function handleHttpResponse(http, element) {
                 populateTargetEl(targetEl, http, element);
             }
 
-            // Perform actions based on the response
-            // For example, update the DOM, show a success message, etc.
+            // Perform 'mx-on-success' actions based on the response
+            // For example, refetch a list of records etc
+            attemptInitOnSuccessActions(http, element);
+
         } else {
             console.log('Response is not HTML. Handle accordingly.');
             // Handle non-HTML responses (e.g., JSON)
@@ -524,6 +526,15 @@ function handleHttpResponse(http, element) {
 
     // Remove the loader if present
     attemptHideLoader(element);
+}
+
+function attemptInitOnSuccessActions(http, element) {
+    const onSuccessStr = element.getAttribute('mx-on-success');
+
+    if (onSuccessStr) {
+        const successTargetEl = document.querySelector(onSuccessStr);
+        handlePageLoadedEvents(successTargetEl);
+    }
 }
 
 function handleValidationErrors(containingForm, validationErrors) {
