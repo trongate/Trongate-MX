@@ -19,7 +19,7 @@ function invokeFormPost(containingForm, triggerEvent, httpMethodAttribute) {
 
     // Attach Trongate MX header to identify the request
     http.setRequestHeader('Trongate-MX-Request', 'true');
-console.log('set header to ' + 'Trongate-MX-Request');
+
     // No need to set Content-Type header when sending FormData
     http.send(formData);
 
@@ -96,7 +96,7 @@ function mxSubmitForm(element, triggerEvent, httpMethodAttribute) {
         if (requiresDataAttributes.includes(httpMethodAttribute)) {
             invokeFormPost(containingForm, triggerEvent, httpMethodAttribute);
         } else {
-            initInvokeHttpRequest(containingForm, httpMethodAttribute);
+            invokeHttpRequest(containingForm, httpMethodAttribute);
         }
     } else {
         console.log('no submit button found');
@@ -111,114 +111,6 @@ function clearExistingValidationErrors(containingForm) {
     // Remove the 'form-field-validation-error' class from form fields
     containingForm.querySelectorAll('.form-field-validation-error')
         .forEach(el => el.classList.remove('form-field-validation-error'));
-}
-
-function initInvokeHttpRequest(element, httpMethodAttribute) {
-
-    console.log(element.outerHTML);
-
-    const buildModalStr = element.getAttribute('mx-build-modal');
-
-    if (buildModalStr) {
-        const modalOptions = parseModalOptions(buildModalStr);
-
-        if (typeof modalOptions === "string") {
-            const modalData = {
-                id: modalOptions
-            }
-
-            buildMXModal(modalData, element, httpMethodAttribute);
-
-        } else {
-            buildMXModal(modalOptions, element, httpMethodAttribute);
-        }
-
-    } else {
-        invokeHttpRequest(element, httpMethodAttribute);
-    }
-
-}
-
-function parseModalOptions(value) {
-    // Trim whitespace from the value
-    value = value.trim();
-
-    // Check if the value starts and ends with '{' and '}', or '[' and ']'
-    if ((value.startsWith('{') && value.endsWith('}')) || 
-        (value.startsWith('[') && value.endsWith(']'))) {
-        try {
-            // Attempt to parse as JSON
-            return JSON.parse(value);
-        } catch (e) {
-            // If parsing fails, return the trimmed string
-            console.warn("Invalid JSON in mx-build-modal:", value);
-            return value;
-        }
-    } else {
-        // If it's not enclosed in curly braces or square brackets, return the trimmed string
-        return value;
-    }
-}
-
-function buildMXModal(modalData, element, httpMethodAttribute) {
-    const modalId = modalData.id;
-
-    // Remove any existing elements that have this 'id' to prevent duplicate elements.
-    const existingEl = document.getElementById(modalId);
-    if (existingEl) {
-        existingEl.remove();
-    }
-
-    // Create the modal container
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.id = modalId;
-    modal.style.display = 'none';
-
-    // Conditionally create the modal heading
-    if (modalData.modalHeading) {
-        const modalHeading = document.createElement('div');
-        modalHeading.className = 'modal-heading';
-        modalHeading.innerHTML = modalData.modalHeading;
-        modal.appendChild(modalHeading);
-    }
-
-    // Create the modal body
-    const modalBody = document.createElement('div');
-    modalBody.className = 'modal-body';
-
-    // Create a spinner div
-    const tempSpinner = document.createElement('div');
-    tempSpinner.setAttribute('class', 'spinner mt-3 mb-3');
-    modalBody.appendChild(tempSpinner);
-
-    // Append the modal body to the modal container
-    modal.appendChild(modalBody);
-
-    // Append the modal to the body
-    document.body.appendChild(modal);
-
-    // Open the modal
-    openModal(modalId);
-
-    // Log a message
-    console.log('Boom!');
-
-    // Adjust modal width if specified
-    const targetModal = document.getElementById(modalId);
-    if (modalData.width) {
-        targetModal.style.maxWidth = modalData.width;
-    }
-
-    // Update mx-target attribute on element
-    if (element.hasAttribute('mx-target')) {
-        element.removeAttribute('mx-target');
-    }
-    const modalBodySelector = `#${modalId} .modal-body`;
-    element.setAttribute('mx-target', modalBodySelector);
-
-    // Invoke HTTP request
-    invokeHttpRequest(element, httpMethodAttribute);
 }
 
 function invokeHttpRequest(element, httpMethodAttribute) {
@@ -294,12 +186,23 @@ function invokeHttpRequest(element, httpMethodAttribute) {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
 function populateTargetEl(targetEl, http, element) {
-console.log(targetEl.outerHTML);
+
     const selectStr = element.getAttribute('mx-select');
     if(!selectStr) {
         console.log('we have no select string')
     }
+
 
     const mxSwapStr = establishSwapStr(element);
     const selectOobStr = element.getAttribute('mx-select-oob');
@@ -317,58 +220,12 @@ console.log(targetEl.outerHTML);
 
         // Handle the main target swap(s)
         handleMainSwaps(targetEl, tempFragment, selectStr, mxSwapStr);
-
-        // Attempt add modal buttons
-        attemptAddModalButtons(targetEl, element);
     } catch (error) {
         console.error('Error in populateTargetEl:', error);
     } finally {
         // Clean up
         tempDiv.innerHTML = '';
         tempFragment.textContent = '';
-    }
-}
-
-function attemptAddModalButtons(targetEl, element) {
-    if (element.hasAttribute('mx-build-modal')) {
-        const modalValue = element.getAttribute('mx-build-modal');
-
-        try {
-            const modalOptions = JSON.parse(modalValue);
-            const buttonPara = document.createElement('p');
-            buttonPara.setAttribute('class', 'text-center');
-            let buttonsAdded = false;
-
-            if (modalOptions.hasOwnProperty('showCloseButton') && modalOptions.showCloseButton === true) {
-                const closeBtn = document.createElement('button');
-                closeBtn.setAttribute('class', 'alt');
-                closeBtn.innerText = 'Close';
-                closeBtn.setAttribute('onclick', 'closeModal()');
-                buttonPara.appendChild(closeBtn);
-                buttonsAdded = true;
-            }
-
-            if (modalOptions.hasOwnProperty('showDestroyButton') && modalOptions.showDestroyButton === true) {
-                const destroyBtn = document.createElement('button');
-                destroyBtn.setAttribute('class', 'alt');
-                destroyBtn.innerText = 'Close';
-                destroyBtn.addEventListener('click', function() {
-                    closeModal();
-                    let targetModal = this.closest('.modal');
-                    if (targetModal) {
-                        targetModal.remove();
-                    }
-                });
-                buttonPara.appendChild(destroyBtn);
-                buttonsAdded = true;
-            }
-
-            if (buttonsAdded) {
-                targetEl.appendChild(buttonPara);
-            }
-        } catch (e) {
-            console.warn('Failed to parse mx-build-modal attribute:', e.message);
-        }
     }
 }
 
@@ -622,6 +479,31 @@ function determineOobMethodology(attributeValue) {
     return null; // or throw new Error('Invalid mx-select-oob syntax');
 }
 
+function handleOobSwapsORIG(tempFragment, selectOobStr, defaultSwapStr) {
+    if (selectOobStr) {
+        const oobSelectors = selectOobStr.split(',');
+        oobSelectors.forEach(selector => {
+            const [oobSelectStr, oobTargetStr] = selector.trim().split(':').map(s => s.trim());
+            if (oobTargetStr && oobSelectStr) {
+                const oobTargets = document.querySelectorAll(oobTargetStr);
+                const oobSelected = tempFragment.querySelector(oobSelectStr);
+                if (oobTargets.length && oobSelected) {
+                    oobTargets.forEach(oobTarget => {
+                        swapContent(oobTarget, oobSelected.cloneNode(true), defaultSwapStr);
+                    });
+                }
+            } else {
+                console.log('cannot run handleOobSwaps perfectly since we dont have...');
+                const oobSelected = tempFragment.firstChild;
+                
+                // Take the entire response body and populate the oob element with that (.innerHTML)
+                const oobTarget = document.querySelector(oobSelectStr)
+                swapContent(oobTarget, oobSelected.cloneNode(true), defaultSwapStr);
+            }
+        });
+    }
+}
+
 function handleMainSwaps(targetEl, tempFragment, selectStr, mxSwapStr) {
     let contents = selectStr ? tempFragment.querySelectorAll(selectStr) : [tempFragment.firstChild];
     contents.forEach(content => {
@@ -703,7 +585,6 @@ function handleHttpResponse(http, element) {
             // Handle non-HTML responses (e.g., JSON)
         }
     } else {
-
         console.error('Request failed with status:', http.status);
         // Handle different types of errors
         switch(http.status) {
@@ -721,22 +602,10 @@ function handleHttpResponse(http, element) {
             console.log('now attempting to display');
             attemptDisplayValidationErrors(http, element, containingForm);
         }
-
-        attemptInitOnErrorActions(http, element);
     }
 
     // Remove the loader if present
     attemptHideLoader(element);
-}
-
-function attemptInitOnErrorActions(http, element) {
-
-    const onErrorStr = element.getAttribute('mx-on-error');
-
-    if (onErrorStr) {
-        const errorTargetEl = document.querySelector(onErrorStr);
-        handlePageLoadedEvents(errorTargetEl);
-    }
 }
 
 function attemptInitOnSuccessActions(http, element) {
@@ -907,6 +776,8 @@ function attemptDisplayValidationErrors(http, element, containingForm) {
     }
 }
 
+
+
 function drawValidationErrorsAlert(targetForm) {
     let alertDiv = document.createElement("div");
     alertDiv.classList.add("validation-error-alert");
@@ -966,13 +837,13 @@ function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
         const containingForm = element.closest('form');
         if (containingForm) {
 
-            if (triggerEvent === 'submit') {
-                mxSubmitForm(element, triggerEvent, httpMethodAttribute);
-            }
+        	if (triggerEvent === 'submit') {
+        		mxSubmitForm(element, triggerEvent, httpMethodAttribute);
+        	}
 
         } else {
-            // This does not belong to a form!
-            initInvokeHttpRequest(element, httpMethodAttribute);
+        	// This does not belong to a form!
+        	invokeHttpRequest(element, httpMethodAttribute);
         }
 
     });
@@ -981,8 +852,8 @@ function handleStandardEvents(element, triggerEvent, httpMethodAttribute) {
 // Function to establish the trigger event based on element type and mx-trigger attribute
 function establishTriggerEvent(element) {
 
-    const tagName = element.tagName;
-    const triggerEventStr = element.getAttribute('mx-trigger');
+	const tagName = element.tagName;
+	const triggerEventStr = element.getAttribute('mx-trigger');
 
     if (triggerEventStr) {
         return triggerEventStr; // Return mx-trigger attribute value if provided
@@ -1019,6 +890,10 @@ function getAttributeValue(element, attributeName) {
     }
     return null;
 }
+
+
+
+
 
 function attemptActivateLoader(element) {
     const indicatorSelector = getAttributeValue(element, 'mx-indicator');
@@ -1116,7 +991,7 @@ function handlePageLoadedEvents(element) {
 
     console.log('we have ' + attribute)
 
-    initInvokeHttpRequest(element, attribute);
+    invokeHttpRequest(element, attribute);
 }
 
 function handleTrongateMXEvent(event) {
@@ -1138,7 +1013,7 @@ function handleTrongateMXEvent(event) {
     if (element.tagName.toLowerCase() === 'form' || element.closest('form')) {
         mxSubmitForm(element, triggerEvent, attribute);
     } else {
-        initInvokeHttpRequest(element, attribute);
+        invokeHttpRequest(element, attribute);
     }
 }
 
@@ -1165,6 +1040,15 @@ function initializeTrongateMX() {
         // Handle elements with 'load' in their mx-trigger attribute
         handlePageLoadedEvents(element);
     });
+
+/*
+    // Handle 'mx-load' elements
+    const loadEls = document.querySelectorAll('[mx-load]');
+
+    document.querySelectorAll('[mx-load]').forEach(element => {
+        handlePageLoadedEvents(element, 'mx-load');
+    });
+*/
 
 }
 

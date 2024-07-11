@@ -198,3 +198,12 @@ function sort_rows_by_property(array $array, string $property, string $direction
     });
     return $array;
 }
+
+/**
+ * Checks if the HTTP request has been invoked by Trongate MX.
+ *
+ * @return bool True if the request has the Trongate-MX-Request header set to 'true', otherwise false.
+ */
+function from_trongate_mx(): bool {
+    return isset($_SERVER['HTTP_TRONGATE_MX_REQUEST']) && $_SERVER['HTTP_TRONGATE_MX_REQUEST'] === 'true';
+}

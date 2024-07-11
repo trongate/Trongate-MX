@@ -1,14 +1,126 @@
 TO DO....
 
+1). CLEAN UP THE WAY THE JSON - TYPE VALUES ARE HANDLED (it's all over the place!)
 
-1).  BUILD THE FOLLOWING 'mx' ATTRIBUTES:
+2).  Build the 'mx-vals' attribute.
 
-* mx-vals?
+3). Prepare a demo.
 
-2). MODIFY THE TRONGATE FRAMEWORK SO THAT IT RECOGNISES REQUESTS MADE BY TRONGATE_MX.
+4).  Add to Trongate Framework.
 
-When view files are served, if the http request was made by Trongate MX, check for alternative view file that ends with '_mx.php', and 
-server that file - if we have it.
+5).  LAUNCH 
+
+
+function console_log($msg) {
+
+$jsonString = $msg;
+if (isJson($jsonString)) {
+    echo "Valid JSON!";
+} else {
+    echo "Not valid JSON.";
+}
+
+    echo '<script>console.log("'.$msg.'")</script>';
+}
+
+<?php
+console_log($msg);
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1).   Modify the following attributes so that they can accept attribute values written in the following form:
+
+
+
+
+
+
+
+<button hx-get="http://localhost/trongate_mx/tasks/read_headers"
+        hx-target="#result"
+        hx-indicator=".spinner"
+        hx-headers='{"City": "London", "Country": "UK", "Language": "English"}'>
+    Fetch Content
+</button>
+
+
+
+
+
+
+
+  
+<button id="fetchDataBtn" hx-get="/api/data">Fetch Data</button>
+
+<script>
+    const fetchDataBtn = document.getElementById('fetchDataBtn');
+
+    fetchDataBtn.addEventListener('click', function() {
+        const token = 'token123';
+        const customHeaders = {
+            'Authorization': `Bearer ${token}`,
+            'Custom-Header': 'value'
+        };
+
+        // Set headers using JavaScript
+        fetchDataBtn.setAttribute('hx-headers', JSON.stringify(customHeaders));
+
+        // Trigger the HTMX request
+        htmx.trigger(fetchDataBtn, 'click');
+    });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
